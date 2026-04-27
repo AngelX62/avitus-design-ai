@@ -2,41 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Avitus — Editorial Minimal design system. All colors HSL. */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Ivory canvas, ink type, stone neutrals */
+    --background: 40 33% 97%;          /* #FAF8F4 ivory */
+    --foreground: 0 0% 7%;             /* #111 ink */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 7%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 40 33% 98%;
+    --popover-foreground: 0 0% 7%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 7%;                /* ink */
+    --primary-foreground: 40 33% 97%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 40 20% 92%;           /* sand */
+    --secondary-foreground: 0 0% 7%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 30 6% 45%;     /* stone */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 35 30% 88%;              /* warm sand accent */
+    --accent-foreground: 0 0% 7%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 40 33% 97%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 30 10% 86%;
+    --input: 30 10% 86%;
+    --ring: 0 0% 7%;
 
-    --radius: 0.5rem;
+    --radius: 0.125rem;                /* near-square corners */
+
+    --ink: 0 0% 7%;
+    --ivory: 40 33% 97%;
+    --stone: 30 6% 45%;
+    --sand: 35 30% 88%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +105,22 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+  }
+
+  .micro-label {
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: hsl(var(--stone));
   }
 }
