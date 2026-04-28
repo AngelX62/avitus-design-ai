@@ -156,6 +156,33 @@ export type Database = {
           },
         ]
       }
+      lead_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          from_status: string | null
+          id: string
+          lead_id: string
+          to_status: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string | null
+          id?: string
+          lead_id: string
+          to_status: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: string | null
+          id?: string
+          lead_id?: string
+          to_status?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           ai_next_action: string | null
@@ -167,19 +194,30 @@ export type Database = {
           brief: string | null
           budget_range: string | null
           created_at: string
+          custom_fields: Json | null
           email: string
           fit_score: number | null
           full_name: string
           id: string
+          last_contacted_at: string | null
           location: string | null
+          missing_info: string[] | null
           phone: string | null
           photo_url: string | null
           project_type: string | null
+          property_type: string | null
+          raw_inquiry: string | null
+          reminder_at: string | null
           rooms: string[] | null
+          score_breakdown: Json | null
           source: string | null
           status: Database["public"]["Enums"]["lead_status"]
+          style_preference: string | null
+          suggested_followup: string | null
+          temperature: string | null
           timeline: string | null
           updated_at: string
+          urgency: string | null
         }
         Insert: {
           ai_next_action?: string | null
@@ -191,19 +229,30 @@ export type Database = {
           brief?: string | null
           budget_range?: string | null
           created_at?: string
+          custom_fields?: Json | null
           email: string
           fit_score?: number | null
           full_name: string
           id?: string
+          last_contacted_at?: string | null
           location?: string | null
+          missing_info?: string[] | null
           phone?: string | null
           photo_url?: string | null
           project_type?: string | null
+          property_type?: string | null
+          raw_inquiry?: string | null
+          reminder_at?: string | null
           rooms?: string[] | null
+          score_breakdown?: Json | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          style_preference?: string | null
+          suggested_followup?: string | null
+          temperature?: string | null
           timeline?: string | null
           updated_at?: string
+          urgency?: string | null
         }
         Update: {
           ai_next_action?: string | null
@@ -215,19 +264,30 @@ export type Database = {
           brief?: string | null
           budget_range?: string | null
           created_at?: string
+          custom_fields?: Json | null
           email?: string
           fit_score?: number | null
           full_name?: string
           id?: string
+          last_contacted_at?: string | null
           location?: string | null
+          missing_info?: string[] | null
           phone?: string | null
           photo_url?: string | null
           project_type?: string | null
+          property_type?: string | null
+          raw_inquiry?: string | null
+          reminder_at?: string | null
           rooms?: string[] | null
+          score_breakdown?: Json | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          style_preference?: string | null
+          suggested_followup?: string | null
+          temperature?: string | null
           timeline?: string | null
           updated_at?: string
+          urgency?: string | null
         }
         Relationships: []
       }
@@ -331,9 +391,14 @@ export type Database = {
       studio_settings: {
         Row: {
           created_at: string
+          currency: string
+          followup_tone: string
           id: string
           ideal_client: string | null
           intake_intro: string | null
+          low_fit_signs: string | null
+          preferred_locations: string[] | null
+          preferred_project_types: string[] | null
           signature_styles: string[] | null
           studio_name: string
           target_budget_max: number | null
@@ -342,9 +407,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          currency?: string
+          followup_tone?: string
           id?: string
           ideal_client?: string | null
           intake_intro?: string | null
+          low_fit_signs?: string | null
+          preferred_locations?: string[] | null
+          preferred_project_types?: string[] | null
           signature_styles?: string[] | null
           studio_name?: string
           target_budget_max?: number | null
@@ -353,9 +423,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          currency?: string
+          followup_tone?: string
           id?: string
           ideal_client?: string | null
           intake_intro?: string | null
+          low_fit_signs?: string | null
+          preferred_locations?: string[] | null
+          preferred_project_types?: string[] | null
           signature_styles?: string[] | null
           studio_name?: string
           target_budget_max?: number | null
@@ -401,7 +476,16 @@ export type Database = {
     }
     Enums: {
       app_role: "owner" | "designer"
-      lead_status: "new" | "qualified" | "proposal" | "won" | "lost"
+      lead_status:
+        | "new"
+        | "qualified"
+        | "proposal"
+        | "won"
+        | "lost"
+        | "needs_review"
+        | "high_fit"
+        | "contacted"
+        | "consultation_booked"
       project_status: "concept" | "development" | "final" | "delivered"
     }
     CompositeTypes: {
@@ -531,7 +615,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["owner", "designer"],
-      lead_status: ["new", "qualified", "proposal", "won", "lost"],
+      lead_status: [
+        "new",
+        "qualified",
+        "proposal",
+        "won",
+        "lost",
+        "needs_review",
+        "high_fit",
+        "contacted",
+        "consultation_booked",
+      ],
       project_status: ["concept", "development", "final", "delivered"],
     },
   },
