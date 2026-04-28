@@ -15,6 +15,8 @@ import DesignDetail from "./pages/DesignDetail.tsx";
 import Projects from "./pages/Projects.tsx";
 import ProjectDetail from "./pages/ProjectDetail.tsx";
 import SettingsPage from "./pages/Settings.tsx";
+import Import from "./pages/Import.tsx";
+import PasteMessage from "./pages/PasteMessage.tsx";
 import { AuthProvider } from "./contexts/AuthContext";
 import { StudioLayout } from "./components/StudioLayout";
 
@@ -30,10 +32,12 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/intake" element={<Intake />} />
+            <Route path="/leads/paste" element={<PasteMessage />} />
             <Route element={<StudioLayout />}>
               <Route path="/" element={<Index />} />
               <Route path="/leads" element={<Leads />} />
               <Route path="/leads/:id" element={<LeadDetail />} />
+              <Route path="/import" element={<Import />} />
               <Route path="/designs" element={<Designs />} />
               <Route path="/designs/new" element={<DesignNew />} />
               <Route path="/designs/:id" element={<DesignDetail />} />
