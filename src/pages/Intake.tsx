@@ -22,6 +22,8 @@ const Intake = () => {
     const { data, error } = await supabase.from("leads").insert({
       ...form,
       rooms: form.rooms.split(",").map(s => s.trim()).filter(Boolean),
+      raw_inquiry: form.brief,
+      source: "intake_form",
     }).select().single();
     if (error) { toast.error(error.message); setBusy(false); return; }
     // Fire-and-forget AI scoring
