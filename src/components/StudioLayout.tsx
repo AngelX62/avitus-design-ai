@@ -1,13 +1,13 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, Sparkles, Users, FolderOpen, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Inbox, Upload, FileText, FolderOpen, Settings, LogOut, ExternalLink } from "lucide-react";
 import { useEffect } from "react";
 
 const nav = [
   { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/leads", label: "Leads", icon: Users },
-  { to: "/designs", label: "Designs", icon: Sparkles },
+  { to: "/leads", label: "Lead Inbox", icon: Inbox },
+  { to: "/import", label: "Import", icon: Upload },
   { to: "/projects", label: "Projects", icon: FolderOpen },
 ];
 
@@ -51,6 +51,16 @@ export const StudioLayout = () => {
               <span>{label}</span>
             </NavLink>
           ))}
+          <a
+            href="/intake"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 px-3 py-2.5 text-sm text-stone hover:text-ink hover:bg-secondary/50 transition-colors"
+          >
+            <FileText size={15} strokeWidth={1.5} />
+            <span>Intake Form</span>
+            <ExternalLink size={11} strokeWidth={1.5} className="ml-auto opacity-60" />
+          </a>
         </nav>
         <div className="px-4 py-5 border-t border-border space-y-0.5">
           <NavLink

@@ -1,136 +1,153 @@
-# Avitus — AI Platform for Interior Design Studios
+# Avitus MVP Refocus — AI Inbound Lead Assistant
 
-An internal studio workspace that automates two things designers spend the most time on: **producing design concepts** and **handling lead flow**. Editorial-minimal aesthetic, calm and confident, inspired by your geometric A-logo.
+Reposition the app around three lead entry methods (Intake Form, Paste Message, Import Sheet) producing clean, scored, actionable lead records. Keep the editorial-minimal aesthetic. Studio owner stays in control — Avitus never sends client-facing messages automatically.
 
----
+## 1. Database changes (one migration)
 
-## Brand & Visual Direction
+**Extend `leads`:**
+- `property_type` text
+- `style_preference` text
+- `urgency` text
+- `temperature` text (`hot` | `warm` | `cold`)
+- `missing_info` text[]
+- `suggested_followup` text
+- `score_breakdown` jsonb (`{budget_fit, timeline_fit, location_fit, project_type_fit, decision_maker, clarity}`, each 0–100)
+- `raw_inquiry` text
+- `custom_fields` jsonb default `'{}'`
+- `last_contacted_at` timestamptz
+- `reminder_at` timestamptz
 
-- **Aesthetic:** Editorial Minimal — generous whitespace, ivory/off-white background, deep charcoal type, hairline borders, no rounded corners on key surfaces.
-- **Type:** Serif display headings (e.g. Cormorant / Fraunces), clean sans for UI/body (Inter).
-- **Palette:** Ivory `#FAF8F4`, Ink `#111111`, Stone `#8A857C`, faint Sand accent for hover states.
-- **Logo:** Your uploaded A-mark used in the sidebar and on auth screens.
-- **Tone:** Quiet luxury. Buttons are thin-bordered or solid ink. Section labels use spaced uppercase micro-type (e.g. `STUDIO · DESIGNS`).
+**`lead_status` enum:** add `needs_review`, `high_fit`, `contacted`, `consultation_booked`. Existing `new`, `won`, `lost` stay; old `qualified`/`proposal` remain valid but unused in UI.
 
----
+**Extend `studio_settings`:**
+- `currency` text default `'USD'`
+- `preferred_project_types` text[]
+- `preferred_locations` text[]
+- `low_fit_signs` text
+- `followup_tone` text default `'warm'`
 
-## Auth & Access
+**New `lead_status_history`:** `id, lead_id, from_status, to_status, changed_by, changed_at` — RLS for studio members.
 
-- Email + password and Google sign-in (Lovable Cloud).
-- Studio-team only — no client portal in v1.
-- Roles via a separate `user_roles` table: `owner`, `designer`. Owners manage team; designers do daily work.
-- A simple `profiles` table for name + avatar.
+**Trigger:** when a lead moves to `won`, auto-insert a `projects` row (name = lead full_name + project_type, link `lead_id`).
 
----
+**Seed ~6 demo leads** spanning the new statuses, temperatures, and sources so the board is populated.
 
-## App Structure
+## 2. Edge functions
 
-```text
-/auth                  Sign in / sign up
-/                      Dashboard (overview)
-/designs               AI design generations gallery
-/designs/new           Create a new generation
-/designs/:id           Single generation detail
-/leads                 Leads pipeline (kanban + table view)
-/leads/:id             Lead detail with AI follow-up
-/projects              Client projects list
-/projects/:id          Project workspace (rooms, versions, notes)
-/settings              Studio settings, team, branding
-```
+**`score-lead` (rewrite):** expanded JSON schema returning `fit_score`, `summary`, `temperature`, `urgency`, `next_action`, `suggested_followup`, `missing_info[]`, `score_breakdown{...}`, `red_flags[]`. Prompt incorporates studio profile (currency, preferred types/locations, low-fit signs, follow-up tone).
 
-A persistent left sidebar holds the A-mark logo, primary nav, and the signed-in designer.
+**`extract-lead` (new):** input `{ raw_text, source }`. Returns parsed fields (name, phone, email, project_type, property_type, location, budget_range, timeline, style_preference, urgency, missing_info). Caller inserts row + invokes `score-lead`.
 
----
+**`import-leads` (new):** input `{ rows, mapping }`. Bulk-inserts, stuffs unmapped columns into `custom_fields`, then triggers `score-lead` per row (concurrency-capped).
 
-## Feature 1 — AI Design Generation
+## 3. Sidebar (StudioLayout)
 
-**Goal:** Turn a brief + reference assets into styled concept images in under a minute.
+**Overview · Lead Inbox · Import · Intake Form · Projects · Settings.**
+- "Lead Inbox" → `/leads`
+- "Intake Form" → opens current studio's `/intake` link in new tab + Settings has copy link
+- Designs link removed; routes remain mounted.
 
-**Inputs (any combination):**
-- Room photo upload (the "before")
-- Floor plan upload (PDF or image)
-- Text brief ("Calm Japandi living room for a young family, lots of natural light…")
-- Style preset chips: Scandi, Japandi, Modern, Mid-century, Coastal, Industrial, Wabi-sabi
-- Color palette picker (3–5 swatches)
-- Budget tier: Essential / Considered / Bespoke
-- Number of variations (1–4)
+## 4. Overview (`/`)
 
-**Output:**
-- Generated concept renders displayed in an editorial grid
-- Auto-generated short "design rationale" paragraph per variation
-- Suggested material/finish list (e.g. "Oak veneer, bouclé, brushed brass")
-- Save to a project, download, or regenerate with tweaks
+Stat cards: **Hot leads waiting · New leads · Needs review · Follow-ups due · Possible duplicates**.
 
-**How it works:** A backend edge function composes the brief + reference image into a multimodal call to Lovable AI (`google/gemini-3-pro-image-preview` for the renders, `google/gemini-3-flash-preview` for the rationale + materials list). Originals and outputs are stored in a `designs` storage bucket.
+**Recent Activity** feed (newest 15) merging:
+- Intake form submissions (source=intake_form)
+- Pasted-message leads (source=pasted)
+- Imported leads (source=imported)
+- Status changes (from `lead_status_history`)
+- Follow-up reminders (leads where `reminder_at` ≤ now)
 
----
+Each row: small source/event chip + lead name + relative time, links to lead.
 
-## Feature 2 — Leads CRM with AI Qualification
+## 5. Lead Inbox (`/leads`, renamed)
 
-**Public intake form** (shareable link, embeddable) collects: name, email, phone, project type, rooms, budget range, timeline, location, free-text brief, optional photo.
+Header title "Lead Inbox." Three top buttons: **Import Sheet** (→ `/import`), **Paste Message** (→ `/leads/paste`), **Create Lead** (modal with minimal form).
 
-**Pipeline stages:** New → Qualified → Proposal → Won / Lost. Kanban board with drag-and-drop, plus a sortable table view.
+Keep Board / Table views.
 
-**AI on every new lead, automatically:**
-- **Fit score 0–100** based on budget, scope match, timeline, and the studio's profile in Settings
-- **One-line summary** of who they are and what they want
-- **Suggested next action** ("Book a 20-min discovery call — high-fit kitchen reno")
-- **Drafted personalized reply email** the designer can edit and send (or copy)
-- **Red flags** surfaced (e.g. unrealistic budget for scope)
+**Board columns:** New · Needs Review · High-Fit · Contacted · Consultation Booked · Won · Lost (horizontal scroll on small screens).
 
-Lead detail page shows: contact info, full brief, AI summary card, activity timeline (notes, status changes, emails drafted), and a "Convert to project" button.
+**Lead card:** name (serif), project_type, location, budget_range (currency-formatted), score badge, temperature pill (hot=ember, warm=sand, cold=stone), one-line `next_action`.
 
----
+## 6. Paste Message (`/leads/paste`) — mobile-first
 
-## Feature 3 — Client Project Management
+Step 1: full-bleed textarea, source chips (WhatsApp / Instagram / Email / SMS / Other), sticky bottom **Create Lead** button (large tap target, `pb-[env(safe-area-inset-bottom)]`).
 
-Each project belongs to one lead/client and contains:
-- **Rooms** (Living, Kitchen, Primary Bedroom…)
-- **Design versions** per room — each version is a saved AI generation or uploaded image, with rationale and materials list
-- **Internal notes** thread
-- **Status:** Concept / Development / Final / Delivered
-- **Files tab:** floor plans, mood boards, supplier quotes (uploads to storage)
+Step 2 (review): runs `extract-lead`, shows editable extracted fields + score preview. Sticky **Save Lead**. On save: insert with `raw_inquiry` + extracted fields + source, fire `score-lead`, navigate to detail.
 
-Quick actions from a project: "Generate a new concept for this room", "Open client lead", "Mark delivered".
+Container `max-w-xl mx-auto`, inputs `min-h-12`.
 
----
+## 7. Import (`/import`) — new
 
-## Dashboard (the home screen)
+Four steps with progress dots:
+1. **Upload** — drag/drop CSV (uses `papaparse`).
+2. **Preview** — first 5 rows + detected headers.
+3. **Map columns** — each CSV column → dropdown (Name, Phone, Email, Source, Project type, Property type, Location, Budget, Timeline, Style, Notes, "Custom field", "Skip"). Heuristic auto-suggest by header name.
+4. **Import** — calls `import-leads`, progress indicator, redirects to `/leads`.
 
-A calm overview, not a wall of charts:
-- Hero stat row: New leads this week · High-fit leads waiting · Active projects · Designs generated this month
-- "Needs your attention" list (high-fit unanswered leads, projects awaiting next step)
-- Recent designs strip (last 6 generations, thumbnails)
-- Recent leads with AI summaries
+Unmapped columns → `custom_fields[csv_header] = value`. Never silently dropped.
 
----
+## 8. Lead Detail (`/leads/:id`) — restructure
 
-## Settings
+Sections in order:
 
-- **Studio profile:** name, logo, ideal client description, target budget range, signature styles — this powers AI lead scoring and design tone.
-- **Intake form:** copy the public URL, customize fields, preview.
-- **Team:** invite designers, manage roles.
-- **Account:** profile, password.
+- **A. Lead Overview** — name, contact, status select, score, temperature, recommended next action.
+- **B. Raw Inquiry** — `raw_inquiry` (or fallback to original brief) in soft monospace block.
+- **C. AI Summary** — `ai_summary`.
+- **D. Extracted Fields** — grid: project_type, property_type, location, budget_range, timeline, style_preference, urgency, source.
+- **E. Score Breakdown** — six horizontal bars from `score_breakdown` (budget/timeline/location/project_type/decision_maker/clarity).
+- **F. Missing Information** — bulleted `missing_info`.
+- **G. Prepared Follow-Up** — editable textarea pre-filled with `suggested_followup` + buttons:
+  - **Copy Message** (clipboard)
+  - **Edit Message** (toggle edit mode, save to `suggested_followup`)
+  - **Mark as Contacted** (sets status=`contacted`, stamps `last_contacted_at`)
+  - **Create Reminder** (small popover: 1d / 3d / 1w / custom → sets `reminder_at`)
+  - No "send" action — owner approves/copies manually.
+- **H. Custom Fields** — key/value table from `custom_fields` (only shown when non-empty).
+- **I. Notes & History** — `lead_activities` (notes) interleaved with `lead_status_history`.
 
----
+## 9. Settings → "Studio Qualification Profile"
 
-## Technical Notes
+Header retitled. Fields: Studio name, Currency (IDR / USD / SGD / AUD / Other), Target budget min, Target budget max, Preferred project types (chips), Preferred locations (chips), Ideal client, Low-fit warning signs, Signature styles, Follow-up tone (warm / direct / playful / formal), Intake form intro. Public intake link copy block stays.
 
-- **Frontend:** React + Vite + Tailwind, shadcn/ui components restyled toward the editorial aesthetic (squared corners, hairline borders, serif headings).
-- **Backend:** Lovable Cloud (Supabase) — Postgres, Auth, Storage, Edge Functions.
-- **AI:** Lovable AI Gateway. Gemini 3 Flash for text (scoring, summaries, drafts, rationale), Gemini 3 Pro Image for concept renders, all called from edge functions (`generate-design`, `score-lead`, `draft-reply`).
-- **Storage buckets:** `design-inputs` (private), `design-outputs` (private, signed URLs), `project-files` (private).
-- **Tables:** `profiles`, `user_roles`, `studio_settings`, `leads`, `lead_activities`, `projects`, `rooms`, `design_generations`, `design_variations`, `project_files`. RLS on every table — designers see all studio data; only owners can edit team and studio settings. Roles checked via a `has_role()` security-definer function.
-- **Public intake form** posts to a public edge function (no auth) that creates the lead and triggers AI scoring asynchronously.
+## 10. Projects
 
----
+Stays minimal. Auto-created on lead `won`. List shows name, client, status, source lead link. No new project management UI.
 
-## Build Order
+## 11. Routing (`App.tsx`)
 
-1. Foundation: design system (fonts, colors, layout shell, sidebar, logo), auth, profiles + roles.
-2. Leads: public intake form, pipeline board, lead detail, AI scoring + reply draft.
-3. Designs: generation flow, gallery, detail page with rationale + materials.
-4. Projects: list, project workspace with rooms and versions, link from leads.
-5. Dashboard + Settings polish.
+Add: `/leads/paste` → PasteMessage, `/import` → Import. Keep existing routes; Designs unlinked from sidebar.
 
-After v1 ships we can layer on a client portal, email sending integration, and proposal/PDF export.
+## Technical notes
+
+- Add `papaparse` + `@types/papaparse`.
+- `src/lib/format.ts` — currency-aware budget formatter using studio currency.
+- All AI fields render gracefully when null (skeleton or em-dash).
+- Enum additions via `ALTER TYPE ADD VALUE` (separate statements, not in a transaction block).
+- Trigger for auto-project creation uses SECURITY DEFINER function in `public`.
+- Reminder logic: "Follow-ups due" = `reminder_at <= now()` OR (`status = contacted` AND `last_contacted_at < now() - 3 days`).
+- Possible duplicates: leads sharing normalized email or phone (basic SQL count of pairs).
+- All edge functions return CORS headers; validate inputs with zod.
+- Mobile: Paste page uses `min-h-[100dvh]` and safe-area padding.
+- Visual style unchanged — ivory/ink, serif headings, hairline borders.
+
+## Out of scope (explicit)
+
+- Outbound automated messaging (WhatsApp/email/SMS sending)
+- Live Instagram/WhatsApp/Sheets sync
+- Designs feature (hidden, code retained)
+- Full project management
+- CSV export (later)
+
+## Build order
+
+1. Migration (columns, enum, settings, history table, trigger) + demo seed
+2. Edge functions: updated `score-lead`, new `extract-lead`, new `import-leads`
+3. Sidebar rename + new routes
+4. Lead Inbox page (buttons, columns, cards, currency formatting)
+5. Paste Message flow (mobile-first)
+6. Import flow (CSV → mapping → import)
+7. Lead Detail restructure (Prepared Follow-Up actions)
+8. Overview metrics + Recent Activity feed
+9. Settings → Qualification Profile expansion
