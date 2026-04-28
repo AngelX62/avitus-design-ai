@@ -38,12 +38,12 @@ const LeadDetail = () => {
   };
 
   const updateStatus = async (status: string) => {
-    await supabase.from("leads").update({ status }).eq("id", id);
+    await supabase.from("leads").update({ status: status as any }).eq("id", id);
     void load();
   };
 
   const markContacted = async () => {
-    await supabase.from("leads").update({ status: "contacted", last_contacted_at: new Date().toISOString() }).eq("id", id);
+    await supabase.from("leads").update({ status: "contacted" as any, last_contacted_at: new Date().toISOString() }).eq("id", id);
     toast.success("Marked as contacted");
     void load();
   };
