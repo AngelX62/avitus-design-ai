@@ -7,41 +7,45 @@
 
 @layer base {
   :root {
-    /* Ivory canvas, ink type, stone neutrals */
-    --background: 40 33% 97%;          /* #FAF8F4 ivory */
-    --foreground: 0 0% 7%;             /* #111 ink */
+    /* Avitus — Clay & Bone editorial palette */
+    --background: 36 27% 90%;          /* #EFE7DA bone */
+    --foreground: 24 22% 13%;          /* #2A201A espresso ink */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 7%;
+    --card: 38 56% 95%;                /* #FBF6EC cream */
+    --card-foreground: 24 22% 13%;
 
-    --popover: 40 33% 98%;
-    --popover-foreground: 0 0% 7%;
+    --popover: 38 56% 95%;
+    --popover-foreground: 24 22% 13%;
 
-    --primary: 0 0% 7%;                /* ink */
-    --primary-foreground: 40 33% 97%;
+    --primary: 24 22% 13%;             /* espresso */
+    --primary-foreground: 38 56% 95%;
 
-    --secondary: 40 20% 92%;           /* sand */
-    --secondary-foreground: 0 0% 7%;
+    --secondary: 34 25% 84%;           /* sand */
+    --secondary-foreground: 24 22% 13%;
 
-    --muted: 40 20% 94%;
-    --muted-foreground: 30 6% 45%;     /* stone */
+    --muted: 36 27% 87%;
+    --muted-foreground: 28 16% 42%;    /* stone */
 
-    --accent: 35 30% 88%;              /* warm sand accent */
-    --accent-foreground: 0 0% 7%;
+    --accent: 15 58% 40%;              /* terracotta */
+    --accent-foreground: 38 56% 95%;
 
-    --destructive: 0 60% 40%;
-    --destructive-foreground: 40 33% 97%;
+    --destructive: 0 50% 38%;
+    --destructive-foreground: 38 56% 95%;
 
-    --border: 30 10% 86%;
-    --input: 30 10% 86%;
-    --ring: 0 0% 7%;
+    --border: 34 30% 79%;              /* hairline */
+    --input: 34 30% 79%;
+    --ring: 24 22% 13%;
 
     --radius: 0.125rem;                /* near-square corners */
 
-    --ink: 0 0% 7%;
-    --ivory: 40 33% 97%;
-    --stone: 30 6% 45%;
-    --sand: 35 30% 88%;
+    --ink: 24 22% 13%;
+    --ivory: 38 56% 95%;               /* cream — kept as "ivory" alias for legacy classes */
+    --cream: 38 56% 95%;
+    --bone: 36 27% 90%;
+    --stone: 28 16% 42%;
+    --sand: 34 25% 84%;
+    --hairline: 34 30% 79%;
+    --terracotta: 15 58% 40%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -121,6 +125,22 @@
     letter-spacing: 0.22em;
     font-size: 0.6875rem;
     font-weight: 500;
+    color: hsl(var(--stone));
+  }
+
+  .serif-numeral {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    font-feature-settings: "lnum";
+    letter-spacing: -0.02em;
+    line-height: 0.9;
+    color: hsl(var(--ink));
+  }
+
+  .italic-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
     color: hsl(var(--stone));
   }
 }

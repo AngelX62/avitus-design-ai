@@ -29,25 +29,26 @@ const Leads = () => {
   };
 
   return (
-    <div className="px-6 md:px-12 py-10">
+    <div className="px-8 md:px-16 py-10">
       <PageHeader
-        eyebrow="STUDIO · LEAD INBOX"
+        eyebrow="LEAD INBOX"
+        sectionNumber={2}
         title="Lead Inbox."
-        subtitle="Every inbound lead — captured, cleaned, and scored. You stay in control of every reply."
+        subtitle={<>Every inbound lead — captured, cleaned, and scored. <em>You stay in control of every reply.</em></>}
         actions={
           <>
-            <Link to="/import" className="flex items-center gap-2 px-4 py-2.5 border border-border text-xs uppercase tracking-[0.18em] text-ink hover:bg-secondary transition-colors">
-              <Upload size={13} /> Import Sheet
+            <Link to="/import" className="flex items-center gap-2 px-4 py-2.5 border border-hairline text-[11px] uppercase tracking-[0.22em] text-ink hover:bg-cream transition-colors">
+              <Upload size={12} /> Import Sheet
             </Link>
-            <Link to="/leads/paste" className="flex items-center gap-2 px-4 py-2.5 border border-border text-xs uppercase tracking-[0.18em] text-ink hover:bg-secondary transition-colors">
-              <MessageSquare size={13} /> Paste Message
+            <Link to="/leads/paste" className="flex items-center gap-2 px-4 py-2.5 border border-hairline text-[11px] uppercase tracking-[0.22em] text-ink hover:bg-cream transition-colors">
+              <MessageSquare size={12} /> Paste Message
             </Link>
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 bg-ink text-ivory text-xs uppercase tracking-[0.18em] hover:bg-ink/90 transition-colors">
-              <Plus size={13} /> Create Lead
+            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 bg-ink text-cream text-[11px] uppercase tracking-[0.22em] hover:bg-ink/90 transition-colors">
+              <Plus size={12} /> Create Lead
             </button>
-            <div className="flex border border-border ml-2">
+            <div className="flex border border-hairline ml-2">
               {(["board", "table"] as const).map((v) => (
-                <button key={v} onClick={() => setView(v)} className={`px-4 py-2.5 text-xs uppercase tracking-[0.18em] ${view === v ? "bg-ink text-ivory" : "text-stone hover:text-ink"}`}>{v}</button>
+                <button key={v} onClick={() => setView(v)} className={`px-4 py-2.5 text-[11px] uppercase tracking-[0.22em] ${view === v ? "bg-ink text-cream" : "text-stone hover:text-ink"}`}>{v}</button>
               ))}
             </div>
           </>
@@ -55,44 +56,47 @@ const Leads = () => {
       />
 
       {view === "board" ? (
-        <div className="overflow-x-auto -mx-6 md:-mx-12 px-6 md:px-12">
-          <div className="flex gap-px bg-border border border-border min-w-[1200px]">
-            {STAGES.map((s) => {
+        <div className="overflow-x-auto -mx-8 md:-mx-16 px-8 md:px-16">
+          <div className="flex gap-6 min-w-[1300px]">
+            {STAGES.map((s, idx) => {
               const items = leads.filter((l) => l.status === s.key);
               return (
-                <div key={s.key} className="bg-background w-[260px] flex-shrink-0 min-h-[500px]">
-                  <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                    <span className="micro-label">{s.label}</span>
-                    <span className="text-xs text-stone">{items.length}</span>
+                <div key={s.key} className="w-[260px] flex-shrink-0 min-h-[500px]">
+                  <div className="pb-3 border-b border-hairline flex items-baseline justify-between">
+                    <div className="micro-label flex items-baseline gap-2">
+                      <span className="text-ink">{String(idx + 1).padStart(2, "0")}</span>
+                      <span>{s.label}</span>
+                    </div>
+                    <span className="serif-numeral text-[20px]">{items.length}</span>
                   </div>
-                  <div className="p-3 space-y-2">
+                  <div className="pt-3 space-y-3">
                     {items.map((l) => (
-                      <Link key={l.id} to={`/leads/${l.id}`} className="block bg-card border border-border p-4 hover:border-ink/40 transition-colors">
+                      <Link key={l.id} to={`/leads/${l.id}`} className="block bg-cream border border-hairline p-4 hover:border-ink/40 transition-colors">
                         <div className="flex items-start justify-between gap-2">
-                          <div className="font-serif text-lg text-ink leading-tight">{l.full_name}</div>
+                          <div className="font-serif text-[19px] text-ink leading-tight">{l.full_name}</div>
                           {l.fit_score != null && (
-                            <div className="text-xs font-medium text-ink whitespace-nowrap">{l.fit_score}</div>
+                            <div className="serif-numeral text-[22px] whitespace-nowrap">{l.fit_score}</div>
                           )}
                         </div>
-                        <div className="text-xs text-stone mt-1.5">
+                        <div className="italic-serif text-[13px] mt-1.5">
                           {l.project_type || "—"}{l.location ? ` · ${l.location}` : ""}
                         </div>
                         {l.budget_range && <div className="text-xs text-ink mt-1.5">{l.budget_range}</div>}
-                        <div className="flex items-center gap-2 mt-3">
-                          {l.temperature && (
-                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 border ${temperatureClass(l.temperature)}`}>
+                        {l.temperature && (
+                          <div className="flex items-center gap-2 mt-3">
+                            <span className={`text-[10px] uppercase tracking-[0.2em] px-2 py-0.5 border ${temperatureClass(l.temperature)}`}>
                               {l.temperature}
                             </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                         {l.ai_next_action && (
-                          <div className="mt-3 pt-3 border-t border-border text-[11px] text-stone leading-snug line-clamp-2">
+                          <div className="mt-3 pt-3 border-t border-hairline italic-serif text-[12px] leading-snug line-clamp-2">
                             → {l.ai_next_action}
                           </div>
                         )}
                       </Link>
                     ))}
-                    {items.length === 0 && <div className="text-xs text-stone/60 px-2 py-4">—</div>}
+                    {items.length === 0 && <div className="italic-serif text-[13px] text-stone/60 py-4">— empty —</div>}
                   </div>
                 </div>
               );
@@ -100,20 +104,18 @@ const Leads = () => {
           </div>
         </div>
       ) : (
-        <div className="border border-border bg-card overflow-x-auto">
-          <div className="min-w-[900px]">
-            {leads.map((l) => (
-              <Link key={l.id} to={`/leads/${l.id}`} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-border last:border-0 hover:bg-secondary/40 items-center text-sm">
-                <div className="col-span-3 font-serif text-lg text-ink">{l.full_name}</div>
-                <div className="col-span-2 text-stone truncate">{l.project_type || "—"}</div>
-                <div className="col-span-2 text-stone truncate">{l.location || "—"}</div>
-                <div className="col-span-2 text-stone text-xs">{l.budget_range || "—"}</div>
-                <div className="col-span-2 micro-label">{STATUS_LABELS[l.status] || l.status}</div>
-                <div className="col-span-1 text-right text-ink">{l.fit_score ?? "—"}</div>
-              </Link>
-            ))}
-            {leads.length === 0 && <div className="p-12 text-center text-stone text-sm">No leads yet.</div>}
-          </div>
+        <div className="border-t border-hairline">
+          {leads.map((l) => (
+            <Link key={l.id} to={`/leads/${l.id}`} className="grid grid-cols-12 gap-4 py-5 border-b border-hairline hover:bg-cream/60 items-baseline text-sm transition-colors px-2 -mx-2">
+              <div className="col-span-3 font-serif text-[20px] text-ink">{l.full_name}</div>
+              <div className="col-span-2 italic-serif text-[14px] truncate">{l.project_type || "—"}</div>
+              <div className="col-span-2 italic-serif text-[14px] truncate">{l.location || "—"}</div>
+              <div className="col-span-2 text-stone text-xs">{l.budget_range || "—"}</div>
+              <div className="col-span-2 micro-label">{STATUS_LABELS[l.status] || l.status}</div>
+              <div className="col-span-1 text-right serif-numeral text-[22px]">{l.fit_score ?? "—"}</div>
+            </Link>
+          ))}
+          {leads.length === 0 && <div className="py-20 text-center italic-serif text-[18px]">No leads yet.</div>}
         </div>
       )}
 
@@ -140,12 +142,12 @@ const CreateLeadModal = ({ onClose, onCreated }: { onClose: () => void; onCreate
     onCreated(data.id);
   };
   return (
-    <div className="fixed inset-0 bg-ink/30 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-background border border-border max-w-lg w-full p-8" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-6">
+    <div className="fixed inset-0 bg-ink/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-cream border border-hairline max-w-lg w-full p-10" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-7">
           <div>
-            <div className="micro-label mb-2">CREATE LEAD</div>
-            <h2 className="font-serif text-3xl text-ink">New lead.</h2>
+            <div className="micro-label mb-3">§ CREATE LEAD</div>
+            <h2 className="font-serif text-4xl text-ink leading-none">New lead.</h2>
           </div>
           <button onClick={onClose} className="text-stone hover:text-ink"><X size={18} /></button>
         </div>
@@ -164,7 +166,7 @@ const CreateLeadModal = ({ onClose, onCreated }: { onClose: () => void; onCreate
             <div className="micro-label mb-2">Notes</div>
             <textarea value={f.brief} onChange={(e) => setF({ ...f, brief: e.target.value })} rows={3} className="w-full bg-transparent border border-border focus:border-ink outline-none p-3 text-ink text-sm" />
           </label>
-          <button disabled={busy} className="w-full px-6 py-3 bg-ink text-ivory text-xs uppercase tracking-[0.22em] hover:bg-ink/90 disabled:opacity-60">{busy ? "Creating…" : "Create lead"}</button>
+          <button disabled={busy} className="w-full px-6 py-3.5 bg-ink text-cream text-[11px] uppercase tracking-[0.22em] hover:bg-ink/90 disabled:opacity-60">{busy ? "Creating…" : "Create lead"}</button>
         </form>
       </div>
     </div>
