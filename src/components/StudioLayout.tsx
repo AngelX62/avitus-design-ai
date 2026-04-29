@@ -1,14 +1,14 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, Inbox, Upload, FileText, FolderOpen, Settings, LogOut, ExternalLink } from "lucide-react";
+import { LogOut, ExternalLink } from "lucide-react";
 import { useEffect } from "react";
 
 const nav = [
-  { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/leads", label: "Lead Inbox", icon: Inbox },
-  { to: "/import", label: "Import", icon: Upload },
-  { to: "/projects", label: "Projects", icon: FolderOpen },
+  { to: "/", num: "01", label: "Overview", end: true },
+  { to: "/leads", num: "02", label: "Lead Inbox" },
+  { to: "/import", num: "03", label: "Import" },
+  { to: "/projects", num: "04", label: "Projects" },
 ];
 
 export const StudioLayout = () => {
@@ -29,62 +29,67 @@ export const StudioLayout = () => {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <aside className="w-60 border-r border-border bg-background flex flex-col">
-        <div className="px-7 py-8 border-b border-border">
+      <aside className="w-64 border-r border-hairline bg-cream flex flex-col">
+        <div className="px-7 py-9 border-b border-hairline">
           <Logo withWordmark />
+          <div className="micro-label mt-3 text-[10px] tracking-[0.28em]">
+            Studio Operating System
+          </div>
         </div>
-        <nav className="flex-1 px-4 py-6 space-y-0.5">
-          {nav.map(({ to, label, icon: Icon, end }) => (
+        <nav className="flex-1 px-3 py-7 space-y-px">
+          {nav.map(({ to, num, label, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                `relative flex items-baseline gap-4 pl-5 pr-3 py-3 text-sm transition-colors ${
                   isActive
-                    ? "bg-secondary text-ink"
-                    : "text-stone hover:text-ink hover:bg-secondary/50"
+                    ? "text-ink before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:bg-terracotta"
+                    : "text-stone hover:text-ink"
                 }`
               }
             >
-              <Icon size={15} strokeWidth={1.5} />
-              <span>{label}</span>
+              <span className="micro-label text-[10px] w-5">{num}</span>
+              <span className="font-serif text-[18px] tracking-tight">{label}</span>
             </NavLink>
           ))}
           <a
             href="/intake"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-3 px-3 py-2.5 text-sm text-stone hover:text-ink hover:bg-secondary/50 transition-colors"
+            className="flex items-baseline gap-4 pl-5 pr-3 py-3 text-sm text-stone hover:text-ink"
           >
-            <FileText size={15} strokeWidth={1.5} />
-            <span>Intake Form</span>
-            <ExternalLink size={11} strokeWidth={1.5} className="ml-auto opacity-60" />
+            <span className="micro-label text-[10px] w-5">↗</span>
+            <span className="font-serif text-[18px] tracking-tight flex-1">Intake Form</span>
+            <ExternalLink size={11} strokeWidth={1.5} className="opacity-50" />
           </a>
         </nav>
-        <div className="px-4 py-5 border-t border-border space-y-0.5">
+        <div className="px-3 py-5 border-t border-hairline space-y-px">
           <NavLink
             to="/settings"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                isActive ? "bg-secondary text-ink" : "text-stone hover:text-ink hover:bg-secondary/50"
+              `relative flex items-baseline gap-4 pl-5 pr-3 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "text-ink before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:bg-terracotta"
+                  : "text-stone hover:text-ink"
               }`
             }
           >
-            <Settings size={15} strokeWidth={1.5} />
-            <span>Settings</span>
+            <span className="micro-label text-[10px] w-5">·</span>
+            <span className="font-serif text-[17px] tracking-tight">Settings</span>
           </NavLink>
           <button
             onClick={async () => { await signOut(); navigate("/auth"); }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-stone hover:text-ink hover:bg-secondary/50 transition-colors"
+            className="w-full flex items-baseline gap-4 pl-5 pr-3 py-2.5 text-sm text-stone hover:text-ink transition-colors"
           >
-            <LogOut size={15} strokeWidth={1.5} />
-            <span>Sign out</span>
+            <span className="micro-label text-[10px] w-5"><LogOut size={11} strokeWidth={1.5} /></span>
+            <span className="font-serif text-[17px] tracking-tight">Sign out</span>
           </button>
-          <div className="px-3 pt-4 truncate text-xs text-stone">{user.email}</div>
+          <div className="px-5 pt-5 truncate text-[11px] text-stone/80 italic-serif">{user.email}</div>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-background">
         <Outlet />
       </main>
     </div>
