@@ -13,10 +13,10 @@ export const formatRelative = (iso?: string | null): string => {
 
 export const temperatureClass = (t?: string | null) => {
   switch (t) {
-    case "hot": return "bg-amber-100 text-amber-900 border-amber-200";
-    case "warm": return "bg-stone-100 text-stone-800 border-stone-200";
-    case "cold": return "bg-slate-100 text-slate-700 border-slate-200";
-    default: return "bg-secondary text-stone border-border";
+    case "hot":  return "bg-terracotta/10 text-terracotta border-terracotta/30";
+    case "warm": return "bg-sand text-ink border-hairline";
+    case "cold": return "bg-transparent text-stone border-hairline";
+    default:     return "bg-transparent text-stone border-hairline";
   }
 };
 
