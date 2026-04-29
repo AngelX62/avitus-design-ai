@@ -23,6 +23,10 @@ export default {
         ivory: "hsl(var(--ivory))",
         stone: "hsl(var(--stone))",
         sand: "hsl(var(--sand))",
+        cream: "hsl(var(--cream))",
+        bone: "hsl(var(--bone))",
+        hairline: "hsl(var(--hairline))",
+        terracotta: "hsl(var(--terracotta))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
