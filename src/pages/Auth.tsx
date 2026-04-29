@@ -40,26 +40,25 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-ink text-ivory">
+      <div className="hidden lg:flex flex-col justify-between p-14 bg-ink text-cream">
         <Logo size={36} />
         <div className="max-w-md">
-          <div className="micro-label text-ivory/60 mb-8">STUDIO · INTELLIGENCE</div>
-          <h1 className="font-serif text-6xl leading-[1.05] text-ivory">
-            Design,<br /><em className="font-light">refined</em><br />by AI.
+          <div className="micro-label text-cream/50 mb-8">§ STUDIO · INTELLIGENCE</div>
+          <h1 className="font-serif text-7xl leading-[0.95] text-cream">
+            Inbound,<br /><em className="font-light">composed</em>.
           </h1>
-          <p className="mt-8 text-ivory/60 text-[15px] leading-relaxed max-w-sm">
-            The quiet, intelligent workspace for interior studios. Generate concepts, qualify leads,
-            ship beautifully — in one place.
+          <p className="mt-10 text-cream/60 italic-serif text-[19px] leading-snug max-w-sm" style={{ color: "rgba(251,246,236,0.6)" }}>
+            A quiet operating system for interior design studios — capture, qualify, and reply, without the noise.
           </p>
         </div>
-        <div className="micro-label text-ivory/40">© Avitus</div>
+        <div className="micro-label text-cream/40 tracking-[0.32em]">© AVITUS · STUDIO OPERATING SYSTEM</div>
       </div>
 
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-10"><Logo withWordmark /></div>
-          <div className="micro-label mb-4">{mode === "signin" ? "WELCOME BACK" : "CREATE STUDIO ACCOUNT"}</div>
-          <h2 className="font-serif text-4xl text-ink mb-10">
+          <div className="micro-label mb-4">§ {mode === "signin" ? "WELCOME BACK" : "CREATE STUDIO ACCOUNT"}</div>
+          <h2 className="font-serif text-5xl text-ink leading-[0.95] mb-10">
             {mode === "signin" ? "Enter the studio." : "Begin with Avitus."}
           </h2>
 
@@ -73,7 +72,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={busy}
-              className="w-full bg-ink text-ivory py-3.5 text-xs tracking-[0.22em] uppercase hover:bg-ink/90 transition-colors disabled:opacity-60"
+              className="w-full bg-ink text-cream py-3.5 text-[11px] tracking-[0.22em] uppercase hover:bg-ink/90 transition-colors disabled:opacity-60"
             >
               {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
@@ -98,7 +97,7 @@ const Field = ({ label, value, onChange, ...rest }: any) => (
       {...rest}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-transparent border-b border-border focus:border-ink outline-none py-2 text-ink placeholder:text-stone transition-colors"
+      className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-ink placeholder:text-stone transition-colors"
     />
   </label>
 );
