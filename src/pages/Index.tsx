@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, FileText, MessageSquare, Upload, Activity, Bell } from "lucide-react";
+import { SectionMarker } from "@/components/SectionMarker";
+import { KPI } from "@/components/KPI";
+import { Hairline } from "@/components/Hairline";
+import { ArrowUpRight, FileText, MessageSquare, Upload, Bell } from "lucide-react";
 import { SOURCE_LABELS, STATUS_LABELS, formatRelative } from "@/lib/format";
 
 const Index = () => {
@@ -58,61 +61,118 @@ const Index = () => {
     })();
   }, []);
 
+  const issueDate = new Date().toLocaleDateString(undefined, { month: "short", year: "numeric" }).toUpperCase();
+
   return (
-    <div className="px-6 md:px-12 py-10 max-w-6xl">
-      <PageHeader eyebrow="STUDIO · OVERVIEW" title="Lead Inbox at a glance." subtitle="Hot leads, follow-ups due, and what landed today — without the noise." />
-
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border mb-12 border border-border">
-        <Stat label="Hot leads waiting" value={stats.hot} accent />
-        <Stat label="New this week" value={stats.newWeek} />
-        <Stat label="Needs review" value={stats.needsReview} />
-        <Stat label="Follow-ups due" value={stats.followups} />
-        <Stat label="Possible duplicates" value={stats.dupes} />
+    <div className="px-8 md:px-16 py-10 max-w-6xl">
+      {/* Masthead */}
+      <div className="flex items-baseline justify-between pb-4 border-b border-hairline mb-10">
+        <div className="micro-label tracking-[0.32em]">
+          AVITUS · STUDIO OPERATING SYSTEM
+        </div>
+        <div className="micro-label tracking-[0.28em]">{issueDate}</div>
       </div>
 
-      <div className="flex items-baseline justify-between mb-6">
-        <div className="micro-label flex items-center gap-2"><Activity size={11} /> RECENT ACTIVITY</div>
-        <Link to="/leads" className="micro-label text-stone hover:text-ink">VIEW INBOX →</Link>
+      <PageHeader
+        eyebrow="OVERVIEW"
+        sectionNumber={1}
+        title="Lead Inbox at a glance."
+        subtitle={<>Hot leads, follow-ups due, and what landed today — <em>without the noise.</em></>}
+      />
+
+      {/* Hero KPI */}
+      <div className="grid md:grid-cols-12 gap-10 items-end pb-12">
+        <div className="md:col-span-7">
+          <KPI
+            label="Hot leads waiting"
+            value={stats.hot}
+            size="hero"
+            accent={stats.hot > 0}
+            caption={
+              stats.hot > 0
+                ? <>Inbound prospects flagged as <em>high-fit</em> and ready for a reply.</>
+                : <>No urgent leads. The inbox is calm.</>
+            }
+          />
+        </div>
+        <div className="md:col-span-5 italic-serif text-[15px] leading-relaxed pb-4 border-l border-hairline pl-6">
+          A daily read of the studio's pipeline — composed, not crowded. Begin with what matters most, then move down the page.
+        </div>
       </div>
 
-      <div className="border border-border bg-card">
+      {/* Sibling KPIs — hairline divided, no boxes */}
+      <Hairline />
+      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-hairline">
+        <SiblingKPI label="New this week" value={stats.newWeek} />
+        <SiblingKPI label="Needs review" value={stats.needsReview} />
+        <SiblingKPI label="Follow-ups due" value={stats.followups} />
+        <SiblingKPI label="Possible duplicates" value={stats.dupes} />
+      </div>
+      <Hairline />
+
+      {/* Recent activity */}
+      <div className="mt-16">
+        <SectionMarker
+          number={2}
+          label="RECENT ACTIVITY"
+          trailing={
+            <Link to="/leads" className="micro-label text-stone hover:text-ink">
+              VIEW INBOX →
+            </Link>
+          }
+        />
+
         {activity.length === 0 ? (
-          <div className="p-12 text-center text-stone text-sm">
-            Nothing yet. Share your <a href="/intake" target="_blank" rel="noreferrer" className="text-ink underline-offset-4 hover:underline">intake form</a>, paste a message, or import a sheet.
+          <div className="py-20 text-center">
+            <p className="italic-serif text-[20px] leading-relaxed max-w-md mx-auto">
+              Nothing yet. Share your{" "}
+              <a href="/intake" target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4 decoration-hairline hover:decoration-ink">
+                intake form
+              </a>
+              , paste a message, or import a sheet.
+            </p>
           </div>
-        ) : activity.map((a, i) => (
-          <Link key={i} to={`/leads/${a.id}`} className="flex items-center gap-4 px-5 md:px-6 py-4 border-b border-border last:border-0 hover:bg-secondary/40 group">
-            <div className="w-7 h-7 flex items-center justify-center bg-secondary text-stone shrink-0">
-              {a.kind === "status" ? <Bell size={12} /> : iconForSource(a.source)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm text-ink truncate">{a.name}</div>
-              <div className="text-xs text-stone mt-0.5">
-                {a.kind === "status"
-                  ? `Moved to ${STATUS_LABELS[a.to] || a.to}`
-                  : `${SOURCE_LABELS[a.source] || a.source} · new lead`}
-              </div>
-            </div>
-            <div className="text-xs text-stone shrink-0">{formatRelative(a.at)}</div>
-            <ArrowUpRight size={15} strokeWidth={1.25} className="text-stone group-hover:text-ink shrink-0" />
-          </Link>
-        ))}
+        ) : (
+          <div className="mt-6">
+            {activity.map((a, i) => (
+              <Link
+                key={i}
+                to={`/leads/${a.id}`}
+                className="flex items-center gap-5 py-5 border-t border-hairline last:border-b group hover:bg-cream/60 px-2 -mx-2 transition-colors"
+              >
+                <div className="w-7 h-7 flex items-center justify-center text-stone shrink-0">
+                  {a.kind === "status" ? <Bell size={13} /> : iconForSource(a.source)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-serif text-[20px] text-ink leading-tight truncate">{a.name}</div>
+                  <div className="italic-serif text-[14px] mt-0.5">
+                    {a.kind === "status"
+                      ? <>Moved to {STATUS_LABELS[a.to] || a.to}</>
+                      : <>{SOURCE_LABELS[a.source] || a.source} · new lead</>}
+                  </div>
+                </div>
+                <div className="micro-label text-stone shrink-0">{formatRelative(a.at)}</div>
+                <ArrowUpRight size={16} strokeWidth={1.25} className="text-stone group-hover:text-ink shrink-0" />
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 const iconForSource = (s?: string) => {
-  if (s === "intake_form") return <FileText size={12} />;
-  if (s === "pasted") return <MessageSquare size={12} />;
-  if (s === "imported") return <Upload size={12} />;
-  return <FileText size={12} />;
+  if (s === "intake_form") return <FileText size={13} />;
+  if (s === "pasted") return <MessageSquare size={13} />;
+  if (s === "imported") return <Upload size={13} />;
+  return <FileText size={13} />;
 };
 
-const Stat = ({ label, value, accent }: { label: string; value: number; accent?: boolean }) => (
-  <div className={`bg-background p-6 ${accent ? "bg-sand/30" : ""}`}>
+const SiblingKPI = ({ label, value }: { label: string; value: number }) => (
+  <div className="px-6 py-7 first:pl-0 last:pr-0">
     <div className="micro-label mb-3">{label}</div>
-    <div className="font-serif text-4xl text-ink leading-none">{value}</div>
+    <div className="serif-numeral text-[44px]">{value}</div>
   </div>
 );
 
