@@ -1,14 +1,14 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Logo } from "./Logo";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, ExternalLink } from "lucide-react";
 import { useEffect } from "react";
 
 const nav = [
-  { to: "/", num: "01", label: "Overview", end: true },
-  { to: "/leads", num: "02", label: "Lead Inbox" },
-  { to: "/import", num: "03", label: "Import" },
-  { to: "/projects", num: "04", label: "Projects" },
+  { to: "/", label: "Overview", end: true },
+  { to: "/leads", label: "Inbox" },
+  { to: "/projects", label: "Projects" },
+  { to: "/designs", label: "Designs" },
+  { to: "/import", label: "Import" },
+  { to: "/settings", label: "Settings" },
 ];
 
 export const StudioLayout = () => {
@@ -27,70 +27,78 @@ export const StudioLayout = () => {
     );
   }
 
+  const date = new Date()
+    .toLocaleDateString(undefined, { weekday: "short", day: "2-digit", month: "short", year: "2-digit" })
+    .toUpperCase();
+
+  const initial = (user.email || "?")[0].toUpperCase();
+
   return (
-    <div className="min-h-screen flex bg-background">
-      <aside className="w-64 border-r border-hairline bg-cream flex flex-col">
-        <div className="px-7 py-9 border-b border-hairline">
-          <Logo withWordmark />
-          <div className="micro-label mt-3 text-[10px] tracking-[0.28em]">
-            Studio Operating System
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-foreground bg-background sticky top-0 z-30">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between gap-6">
+          <div className="flex items-baseline gap-10">
+            <NavLink to="/" className="text-[15px] font-medium tracking-[-0.02em] text-foreground leading-none">
+              AVITUS<span className="text-accent">.</span>
+            </NavLink>
+            <nav className="hidden md:flex items-baseline gap-6 text-[13px]">
+              {nav.map(({ to, label, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    `pb-[2px] transition-colors ${
+                      isActive
+                        ? "text-foreground border-b border-foreground"
+                        : "text-graphite hover:text-foreground"
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="/intake"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden md:block text-[11px] uppercase tracking-[0.16em] text-graphite hover:text-foreground"
+            >
+              Intake form ↗
+            </a>
+            <span className="hidden md:block text-[11px] tracking-[0.16em] text-graphite tabular">{date}</span>
+            <button
+              onClick={async () => { await signOut(); navigate("/auth"); }}
+              title={user.email || "Sign out"}
+              className="w-7 h-7 rounded-full bg-foreground text-background text-[11px] flex items-center justify-center hover:opacity-80"
+            >
+              {initial}
+            </button>
           </div>
         </div>
-        <nav className="flex-1 px-3 py-7 space-y-px">
-          {nav.map(({ to, num, label, end }) => (
+        {/* Mobile nav */}
+        <nav className="md:hidden flex gap-5 px-6 pb-3 text-[12px] overflow-x-auto border-t border-rule">
+          {nav.map(({ to, label, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `relative flex items-baseline gap-4 pl-5 pr-3 py-3 text-sm transition-colors ${
-                  isActive
-                    ? "text-ink before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:bg-terracotta"
-                    : "text-stone hover:text-ink"
-                }`
+                `whitespace-nowrap pt-2 ${isActive ? "text-foreground border-b border-foreground" : "text-graphite"}`
               }
             >
-              <span className="micro-label text-[10px] w-5">{num}</span>
-              <span className="font-serif text-[18px] tracking-tight">{label}</span>
+              {label}
             </NavLink>
           ))}
-          <a
-            href="/intake"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-baseline gap-4 pl-5 pr-3 py-3 text-sm text-stone hover:text-ink"
-          >
-            <span className="micro-label text-[10px] w-5">↗</span>
-            <span className="font-serif text-[18px] tracking-tight flex-1">Intake Form</span>
-            <ExternalLink size={11} strokeWidth={1.5} className="opacity-50" />
-          </a>
         </nav>
-        <div className="px-3 py-5 border-t border-hairline space-y-px">
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              `relative flex items-baseline gap-4 pl-5 pr-3 py-2.5 text-sm transition-colors ${
-                isActive
-                  ? "text-ink before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:bg-terracotta"
-                  : "text-stone hover:text-ink"
-              }`
-            }
-          >
-            <span className="micro-label text-[10px] w-5">·</span>
-            <span className="font-serif text-[17px] tracking-tight">Settings</span>
-          </NavLink>
-          <button
-            onClick={async () => { await signOut(); navigate("/auth"); }}
-            className="w-full flex items-baseline gap-4 pl-5 pr-3 py-2.5 text-sm text-stone hover:text-ink transition-colors"
-          >
-            <span className="micro-label text-[10px] w-5"><LogOut size={11} strokeWidth={1.5} /></span>
-            <span className="font-serif text-[17px] tracking-tight">Sign out</span>
-          </button>
-          <div className="px-5 pt-5 truncate text-[11px] text-stone/80 italic-serif">{user.email}</div>
+      </header>
+      <main className="flex-1 overflow-auto">
+        <div className="max-w-[1400px] mx-auto">
+          <Outlet />
         </div>
-      </aside>
-      <main className="flex-1 overflow-auto bg-background">
-        <Outlet />
       </main>
     </div>
   );

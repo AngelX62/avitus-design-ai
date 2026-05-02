@@ -11,7 +11,7 @@ const Projects = () => {
 
   return (
     <div className="px-12 py-12">
-      <PageHeader eyebrow="STUDIO · PROJECTS" title="Projects." subtitle="Live engagements with rooms, versions, and notes." />
+      <PageHeader eyebrow="Projects" sectionNumber={4} title="Projects." subtitle="Live engagements with rooms, versions, and notes." />
       {items.length === 0 ? (
         <div className="border border-border bg-card p-16 text-center text-stone text-sm">No projects yet. Convert a lead into a project from any lead detail page.</div>
       ) : (

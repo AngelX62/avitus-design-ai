@@ -17,7 +17,8 @@ const Designs = () => {
   return (
     <div className="px-12 py-12">
       <PageHeader
-        eyebrow="STUDIO · DESIGNS"
+        eyebrow="Designs"
+        sectionNumber={5}
         title="Designs."
         subtitle="Generated concepts, mood boards, and renders."
         actions={
