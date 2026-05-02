@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -39,26 +38,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      <div className="hidden lg:flex flex-col justify-between p-14 bg-ink text-cream">
-        <Logo size={36} />
-        <div className="max-w-md">
-          <div className="micro-label text-cream/50 mb-8">§ STUDIO · INTELLIGENCE</div>
-          <h1 className="font-serif text-7xl leading-[0.95] text-cream">
-            Inbound,<br /><em className="font-light">composed</em>.
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-foreground">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
+          <div className="text-[15px] font-medium tracking-[-0.02em]">AVITUS<span className="text-accent">.</span></div>
+          <div className="micro-label">Studio Operating System</div>
+        </div>
+      </header>
+      <div className="flex-1 grid md:grid-cols-12 max-w-[1400px] mx-auto w-full">
+        <div className="md:col-span-7 px-6 md:px-12 py-16 md:border-r border-rule">
+          <div className="micro-label mb-6">A · Welcome</div>
+          <h1 className="text-[56px] md:text-[80px] leading-[0.98] tracking-[-0.04em] text-foreground">
+            Inbound,<br/><span className="text-graphite">composed.</span>
           </h1>
-          <p className="mt-10 text-cream/60 italic-serif text-[19px] leading-snug max-w-sm" style={{ color: "rgba(251,246,236,0.6)" }}>
+          <p className="mt-8 text-[16px] text-graphite leading-relaxed max-w-md">
             A quiet operating system for interior design studios — capture, qualify, and reply, without the noise.
           </p>
         </div>
-        <div className="micro-label text-cream/40 tracking-[0.32em]">© AVITUS · STUDIO OPERATING SYSTEM</div>
-      </div>
 
-      <div className="flex items-center justify-center p-8">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden mb-10"><Logo withWordmark /></div>
-          <div className="micro-label mb-4">§ {mode === "signin" ? "WELCOME BACK" : "CREATE STUDIO ACCOUNT"}</div>
-          <h2 className="font-serif text-5xl text-ink leading-[0.95] mb-10">
+        <div className="md:col-span-5 px-6 md:px-12 py-16 bg-panel">
+          <div className="micro-label mb-6">B · {mode === "signin" ? "Sign in" : "Create account"}</div>
+          <h2 className="text-[32px] tracking-[-0.03em] text-foreground mb-10 leading-[1.05]">
             {mode === "signin" ? "Enter the studio." : "Begin with Avitus."}
           </h2>
 
@@ -72,7 +72,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={busy}
-              className="w-full bg-ink text-cream py-3.5 text-[11px] tracking-[0.22em] uppercase hover:bg-ink/90 transition-colors disabled:opacity-60"
+              className="w-full bg-foreground text-background py-3.5 text-[11px] tracking-[0.16em] uppercase hover:opacity-90 transition-opacity disabled:opacity-60"
             >
               {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
             </button>
@@ -80,7 +80,7 @@ const Auth = () => {
 
           <button
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-8 micro-label text-stone hover:text-ink transition-colors"
+            className="mt-8 micro-label text-graphite hover:text-foreground transition-colors"
           >
             {mode === "signin" ? "→ Need an account?" : "→ Already have one?"}
           </button>
@@ -97,7 +97,7 @@ const Field = ({ label, value, onChange, ...rest }: any) => (
       {...rest}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-transparent border-b border-hairline focus:border-ink outline-none py-2 text-ink placeholder:text-stone transition-colors"
+      className="w-full bg-transparent border-b border-rule focus:border-foreground outline-none py-2 text-foreground placeholder:text-graphite transition-colors"
     />
   </label>
 );
