@@ -11,12 +11,22 @@ export const formatRelative = (iso?: string | null): string => {
   return new Date(iso).toLocaleDateString();
 };
 
+export const temperatureTone = (t?: string | null): "hot" | "warm" | "cold" | "neutral" => {
+  switch (t) {
+    case "hot":  return "hot";
+    case "warm": return "warm";
+    case "cold": return "cold";
+    default:     return "neutral";
+  }
+};
+
+// Legacy class helper kept for any old call sites.
 export const temperatureClass = (t?: string | null) => {
   switch (t) {
-    case "hot":  return "bg-terracotta/10 text-terracotta border-terracotta/30";
-    case "warm": return "bg-sand text-ink border-hairline";
-    case "cold": return "bg-transparent text-stone border-hairline";
-    default:     return "bg-transparent text-stone border-hairline";
+    case "hot":  return "bg-accent text-background border-accent";
+    case "warm": return "bg-transparent text-foreground border-foreground";
+    case "cold": return "bg-transparent text-graphite border-rule";
+    default:     return "bg-transparent text-graphite border-rule";
   }
 };
 
