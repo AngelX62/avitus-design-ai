@@ -14,18 +14,18 @@ export const PageHeader = ({
   subtitle?: ReactNode;
   actions?: ReactNode;
 }) => (
-  <div className="flex flex-wrap items-end justify-between gap-6 pb-10 mb-10 border-b border-hairline">
+  <div className="flex flex-wrap items-end justify-between gap-6 pb-8 mb-10 border-b border-foreground">
     <div className="max-w-2xl">
       {eyebrow && (
         <div className="mb-5">
           <SectionMarker number={sectionNumber} label={eyebrow} />
         </div>
       )}
-      <h1 className="font-serif text-5xl md:text-6xl text-ink leading-[0.95]">
+      <h1 className="text-[40px] md:text-[52px] text-foreground leading-[1.02] tracking-[-0.035em] font-normal">
         {title}
       </h1>
       {subtitle && (
-        <p className="italic-serif mt-5 text-[19px] md:text-[21px] leading-snug">
+        <p className="mt-4 text-[15px] md:text-[16px] text-graphite leading-relaxed">
           {subtitle}
         </p>
       )}

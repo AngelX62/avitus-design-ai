@@ -1,6 +1,16 @@
 /**
- * Semantic hairline divider. Replaces boxed cards in editorial layouts.
+ * Atelier hairline divider. Two weights: stone (default) and ink (structural).
  */
-export const Hairline = ({ className = "" }: { className?: string }) => (
-  <div className={`h-px w-full bg-hairline ${className}`} />
+export const Hairline = ({
+  className = "",
+  weight = "stone",
+}: {
+  className?: string;
+  weight?: "stone" | "ink";
+}) => (
+  <div
+    className={`h-px w-full ${
+      weight === "ink" ? "bg-foreground" : "bg-rule"
+    } ${className}`}
+  />
 );

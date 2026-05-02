@@ -1,8 +1,10 @@
 import { ReactNode } from "react";
 
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 /**
- * Editorial section marker — e.g. "§ 01 OVERVIEW"
- * Used at the top of pages and between major sections.
+ * Atelier section marker — e.g. "A · OVERVIEW"
+ * Accepts a number (1-based) which is rendered as a letter (A, B, C…).
  */
 export const SectionMarker = ({
   number,
@@ -12,15 +14,19 @@ export const SectionMarker = ({
   number?: string | number;
   label: string;
   trailing?: ReactNode;
-}) => (
-  <div className="flex items-baseline justify-between gap-4">
-    <div className="micro-label flex items-baseline gap-3">
-      <span className="text-ink/60">§</span>
-      {number !== undefined && (
-        <span className="text-ink">{String(number).padStart(2, "0")}</span>
-      )}
-      <span>{label}</span>
+}) => {
+  let prefix: string | undefined;
+  if (typeof number === "number") prefix = LETTERS[(number - 1) % 26];
+  else if (typeof number === "string") prefix = number;
+
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-b border-foreground pb-2">
+      <div className="micro-label flex items-baseline gap-2 text-foreground">
+        {prefix && <span>{prefix}</span>}
+        {prefix && <span className="text-graphite">·</span>}
+        <span className="text-graphite">{label}</span>
+      </div>
+      {trailing}
     </div>
-    {trailing}
-  </div>
-);
+  );
+};
