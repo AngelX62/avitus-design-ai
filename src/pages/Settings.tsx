@@ -38,8 +38,9 @@ const Settings = () => {
   return (
     <div className="px-6 md:px-12 py-10 max-w-3xl">
       <PageHeader
-        eyebrow="STUDIO · QUALIFICATION PROFILE"
-        title="Studio Qualification Profile."
+        eyebrow="Settings"
+        sectionNumber={6}
+        title="Studio profile."
         subtitle="This profile shapes how Avitus scores incoming leads and drafts your follow-ups. Update it as your studio evolves."
       />
 

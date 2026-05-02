@@ -69,21 +69,31 @@ const Import = () => {
   return (
     <div className="px-6 md:px-12 py-10 max-w-5xl">
       <PageHeader
-        eyebrow="STUDIO · IMPORT"
+        eyebrow="Import"
+        sectionNumber={3}
         title="Import a sheet."
         subtitle="Upload a messy CSV. Avitus suggests column mappings, preserves your custom fields, and runs cleanup after import."
       />
 
-      <div className="flex items-center gap-3 mb-10">
-        {[1, 2, 3, 4].map((n) => (
-          <div key={n} className="flex items-center gap-3">
-            <div className={`w-7 h-7 flex items-center justify-center text-xs border ${step >= n ? "bg-ink text-ivory border-ink" : "border-border text-stone"}`}>
-              {step > n ? <Check size={12} /> : n}
+      <div className="flex items-center gap-4 mb-12 border-y border-foreground py-4">
+        {(["A", "B", "C", "D"] as const).map((L, i) => {
+          const n = (i + 1) as 1 | 2 | 3 | 4;
+          const labels = ["UPLOAD", "PREVIEW", "MAP", "IMPORT"];
+          const active = step === n;
+          const done = step > n;
+          return (
+            <div key={L} className="flex items-center gap-3 flex-1">
+              <div className="micro-label flex items-baseline gap-2">
+                <span className={done || active ? "text-foreground" : "text-graphite"}>{L}</span>
+                <span className="text-graphite">·</span>
+                <span className={done || active ? "text-foreground" : "text-graphite"}>
+                  {done ? <Check size={12} className="inline -mt-0.5" /> : labels[i]}
+                </span>
+              </div>
+              {n < 4 && <div className={`flex-1 h-px ${done ? "bg-foreground" : "bg-rule"}`} />}
             </div>
-            {n < 4 && <div className={`w-12 h-px ${step > n ? "bg-ink" : "bg-border"}`} />}
-          </div>
-        ))}
-        <div className="ml-4 micro-label text-stone">{["UPLOAD", "PREVIEW", "MAP COLUMNS", "IMPORT"][step - 1]}</div>
+          );
+        })}
       </div>
 
       {step === 1 && (
