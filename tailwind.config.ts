@@ -27,6 +27,9 @@ export default {
         bone: "hsl(var(--bone))",
         hairline: "hsl(var(--hairline))",
         terracotta: "hsl(var(--terracotta))",
+        panel: "hsl(var(--panel))",
+        rule: "hsl(var(--rule))",
+        graphite: "hsl(var(--muted-foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -67,8 +70,9 @@ export default {
         },
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        serif: ['Inter', 'system-ui', 'sans-serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
