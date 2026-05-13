@@ -4,7 +4,7 @@ import { Sparkles, CheckCircle2, Clock, MessageSquare, FileText } from "lucide-r
 import { LeadSignals } from "@/components/LeadSignals";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CLASSIFICATION_LABELS, SOURCE_LABELS, STATUS_LABELS, classificationClass, formatRelative } from "@/lib/format";
-import { computeSignals, type LeadShape, type SignalTone } from "@/lib/leadSignals";
+import { computeSignals, isPlaceholderEmail, type LeadShape, type SignalTone } from "@/lib/leadSignals";
 import { type LeadStatus } from "@/lib/leadTypes";
 import { REVEAL_DURATION, REVEAL_EASE } from "./lead-detail-utils";
 import { ReminderMenu } from "./ReminderMenu";
@@ -76,6 +76,8 @@ export const LeadControlDeck = ({
   const railClass = railFromTone(dominantTone);
   const displayClassification = lead.classification || lead.temperature;
   const sourceLabel = SOURCE_LABELS[lead.source] || lead.source;
+  const displayEmail = isPlaceholderEmail(lead.email) ? null : lead.email;
+  const contactLine = [displayEmail, lead.phone].filter(Boolean).join(" · ");
 
   const reveal = (delay: number) =>
     reduced
@@ -121,8 +123,7 @@ export const LeadControlDeck = ({
           {lead.full_name}
         </motion.h1>
         <motion.div {...reveal(0.16)} className="text-stone text-sm mt-2">
-          {lead.email}
-          {lead.phone ? ` · ${lead.phone}` : ""}
+          {contactLine || "Missing contact details"}
         </motion.div>
 
         {/* Signals row */}

@@ -54,6 +54,8 @@ const Leads = () => {
       going_cold: 0,
       follow_ups_due: 0,
       missing_info: 0,
+      duplicates: 0,
+      status_health: 0,
       import_rows: 0,
     };
     for (const lead of leads) {

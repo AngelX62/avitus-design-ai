@@ -56,6 +56,12 @@ export const normalizeImportRow = (row: Record<string, unknown>, mapping: Import
     custom[csvCol.slice(0, 80)] = safeValue;
   }
 
+  const mappedSource = typeof lead.source === "string" ? lead.source : null;
+  if (mappedSource) {
+    custom.original_source = mappedSource;
+    delete lead.source;
+  }
+
   lead.custom_fields = custom;
   lead.raw_inquiry = lead.raw_inquiry || lead.brief || null;
 

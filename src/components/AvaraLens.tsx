@@ -13,7 +13,9 @@ interface AvaraLensProps {
   layoutId?: string;
 }
 
-const lensMotion = {
+const motionMap = (definition: Record<AvaraLensState, any>) => definition;
+
+const lensMotion = motionMap({
   active: {
     y: [0, -1.4, 0.6, 0],
     rotate: [0, 1.2, -0.6, 0],
@@ -38,9 +40,9 @@ const lensMotion = {
     scale: [1, 1.08, 1],
     transition: { duration: 0.92, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const pearlCoreMotion = {
+const pearlCoreMotion = motionMap({
   active: {
     rotate: [0, 3, -1, 0],
     scale: [1, 1.015, 1.006, 1],
@@ -61,9 +63,9 @@ const pearlCoreMotion = {
     scale: [1, 1.06, 1],
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const lavenderMotion = {
+const lavenderMotion = motionMap({
   active: {
     x: [0, 0.8, -0.4, 0],
     y: [0, -0.7, 0.3, 0],
@@ -88,9 +90,9 @@ const lavenderMotion = {
     opacity: [0.48, 0.92, 0.58],
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const roseMotion = {
+const roseMotion = motionMap({
   active: {
     x: [0, -0.9, 0.5, 0],
     y: [0, 0.6, -0.3, 0],
@@ -115,9 +117,9 @@ const roseMotion = {
     opacity: [0.48, 0.9, 0.58],
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const apertureMotion = {
+const apertureMotion = motionMap({
   active: {
     opacity: [0.16, 0.42, 0.18],
     rotate: [0, 90, 180],
@@ -139,9 +141,9 @@ const apertureMotion = {
     scale: [0.95, 1.15, 1.02],
     transition: { duration: 0.95, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const causticMotion = {
+const causticMotion = motionMap({
   active: {
     x: [0, 1.1, -0.8, 0],
     y: [0, -0.9, 0.5, 0],
@@ -170,9 +172,9 @@ const causticMotion = {
     opacity: [0.34, 0.9, 0.5],
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const traceMotion = {
+const traceMotion = motionMap({
   active: {
     pathLength: [0.16, 0.62, 0.22],
     rotate: [-20, 80, 150],
@@ -197,9 +199,9 @@ const traceMotion = {
     opacity: [0, 0.86, 0],
     transition: { duration: 0.92, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const threadLineMotion = {
+const threadLineMotion = motionMap({
   active: {
     pathLength: [0.08, 0.36, 0.12],
     opacity: [0, 0.24, 0],
@@ -220,9 +222,9 @@ const threadLineMotion = {
     opacity: [0, 0.72, 0],
     transition: { duration: 0.82, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const facetMotion = {
+const facetMotion = motionMap({
   active: {
     x: [0, -0.7, 0.5, 0],
     y: [0, 0.8, -0.4, 0],
@@ -251,9 +253,9 @@ const facetMotion = {
     opacity: [0.58, 0.98, 0.68],
     transition: { duration: 0.86, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
-const signalMotion = {
+const signalMotion = motionMap({
   active: {
     x: [0, 1.2, -0.5, 0],
     y: [0, -0.8, 0.5, 0],
@@ -282,7 +284,7 @@ const signalMotion = {
     opacity: [0.42, 1, 0.62],
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
-};
+});
 
 export const AvaraLens = ({
   state = "active",

@@ -67,7 +67,7 @@ type ActionQueueItem = {
 const openStatuses = new Set(["new", "needs_review", "high_fit", "contacted", "consultation_booked"]);
 
 const isPlaceholderEmail = (email?: string | null) =>
-  Boolean(email && /^unknown\+[^@]+@(intake|import|manual)\.avitus$/i.test(email.trim()));
+  Boolean(email && /^unknown\+[^@]+@(intake|import|manual|pasted)\.avitus$/i.test(email.trim()));
 
 const hasUsableContact = (lead: Pick<LeadRow, "email" | "phone">) =>
   Boolean(lead.phone?.trim()) || Boolean(lead.email?.trim() && !isPlaceholderEmail(lead.email));

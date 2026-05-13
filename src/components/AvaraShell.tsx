@@ -48,8 +48,8 @@ interface CompactPanelProps {
 const CompactPanel = ({ children, shouldReduceMotion }: CompactPanelProps) => {
   const isPresent = useIsPresent();
   const panelTransition = shouldReduceMotion
-    ? { duration: 0 }
-    : { duration: 0.3, ease: [0.22, 1, 0.36, 1] };
+    ? ({ duration: 0 } as const)
+    : ({ duration: 0.3, ease: [0.22, 1, 0.36, 1] } as const);
 
   return (
     <motion.div

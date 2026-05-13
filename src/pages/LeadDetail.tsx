@@ -11,6 +11,7 @@ import { LeadControlDeck } from "@/components/lead-detail/LeadControlDeck";
 import { LeadContextStack } from "@/components/lead-detail/LeadContextStack";
 import { LeadActivityRail } from "@/components/lead-detail/LeadActivityRail";
 import { getReviewReasons, normalizeScoreCriteria } from "@/components/lead-detail/lead-detail-utils";
+import { isPlaceholderEmail } from "@/lib/leadSignals";
 
 const BackLink = () => (
   <Link to="/leads" className="inline-flex items-center gap-2 micro-label text-stone hover:text-pine mb-6">
@@ -168,11 +169,12 @@ const LeadDetail = () => {
     ? lead.missing_info.filter((s: unknown): s is string => typeof s === "string" && s.length > 0)
     : [];
   const deterministicMissing: string[] = [];
+  const hasUsableEmail = Boolean(lead.email && !isPlaceholderEmail(lead.email));
   if (!lead.budget_range) deterministicMissing.push("Budget");
   if (!lead.timeline) deterministicMissing.push("Timeline");
   if (!lead.project_type) deterministicMissing.push("Project type");
   if (!lead.location) deterministicMissing.push("Location");
-  if (!lead.email && !lead.phone) deterministicMissing.push("Contact details");
+  if (!hasUsableEmail && !lead.phone) deterministicMissing.push("Contact details");
   const missingInfo = analysisComplete ? aiMissingInfo : deterministicMissing;
 
   return (

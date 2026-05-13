@@ -155,6 +155,16 @@ describe("import row normalization", () => {
     expect(normalized.lead.custom_fields).toEqual({ Designer: "Mira", Instagram: "@jane" });
   });
 
+  it("preserves a mapped source as custom metadata while leaving ingestion source to the import workflow", () => {
+    const normalized = normalizeImportRow(
+      { Name: "Jane Lee", Source: "Instagram" },
+      { Name: "full_name", Source: "source" },
+    );
+
+    expect(normalized.lead.source).toBeUndefined();
+    expect(normalized.lead.custom_fields).toEqual({ original_source: "Instagram" });
+  });
+
   it("skips rows without a full name and returns a reason", () => {
     const normalized = normalizeImportRow(
       { Email: "nameless@example.com" },

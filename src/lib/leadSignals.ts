@@ -38,7 +38,7 @@ const isOpenStatus = (status?: string | null) =>
   status !== "won" && status !== "lost";
 
 export const isPlaceholderEmail = (email?: string | null) =>
-  Boolean(email && /^unknown\+[^@]+@(intake|import|manual)\.avitus$/i.test(email.trim()));
+  Boolean(email && /^unknown\+[^@]+@(intake|import|manual|pasted)\.avitus$/i.test(email.trim()));
 
 export const hasUsableContact = (lead: Pick<LeadShape, "email" | "phone">) =>
   Boolean(lead.phone?.trim()) || Boolean(lead.email?.trim() && !isPlaceholderEmail(lead.email));

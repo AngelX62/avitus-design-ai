@@ -292,4 +292,16 @@ describe("lead stats aggregation", () => {
     expect(stats.summary.importRowsNeedingReview).toBe(1);
     expect(stats.summary.noFollowUpRiskCount).toBe(1);
   });
+
+  it("treats pasted placeholder emails as missing contact information", () => {
+    const stats = buildLeadStats([
+      makeLead({
+        id: "pasted-placeholder",
+        email: "unknown+abc123@pasted.avitus",
+        phone: null,
+      }),
+    ], now);
+
+    expect(stats.summary.missingInfoCount).toBe(1);
+  });
 });

@@ -1,153 +1,74 @@
-# Avitus MVP Refocus — AI Inbound Lead Assistant
+## Atelier — Architectural Grid
 
-Reposition the app around three lead entry methods (Intake Form, Paste Message, Import Sheet) producing clean, scored, actionable lead records. Keep the editorial-minimal aesthetic. Studio owner stays in control — Avitus never sends client-facing messages automatically.
+A full visual + layout redirection. Move Avitus from the current ivory/serif "magazine" feel to a **gallery-architectural** aesthetic: bone canvas, sharp 12-column grids divided by structural hairlines, modern grotesk headlines (not serif romance), terracotta as the only accent, and data presented like an architect's drawing sheet rather than a CRM dashboard.
 
-## 1. Database changes (one migration)
+This is what the third prototype showed: top horizontal navigation, asymmetric column splits with vertical dividers, big tabular numerals, small inline status chips, and pipeline bars. Calm, dense-when-needed, never decorative.
 
-**Extend `leads`:**
-- `property_type` text
-- `style_preference` text
-- `urgency` text
-- `temperature` text (`hot` | `warm` | `cold`)
-- `missing_info` text[]
-- `suggested_followup` text
-- `score_breakdown` jsonb (`{budget_fit, timeline_fit, location_fit, project_type_fit, decision_maker, clarity}`, each 0–100)
-- `raw_inquiry` text
-- `custom_fields` jsonb default `'{}'`
-- `last_contacted_at` timestamptz
-- `reminder_at` timestamptz
+---
 
-**`lead_status` enum:** add `needs_review`, `high_fit`, `contacted`, `consultation_booked`. Existing `new`, `won`, `lost` stay; old `qualified`/`proposal` remain valid but unused in UI.
+### Palette (replaces Clay & Bone)
 
-**Extend `studio_settings`:**
-- `currency` text default `'USD'`
-- `preferred_project_types` text[]
-- `preferred_locations` text[]
-- `low_fit_signs` text
-- `followup_tone` text default `'warm'`
+| Token | HSL | Hex | Use |
+|---|---|---|---|
+| `--background` | `45 20% 97%` | #FAF9F6 | Canvas |
+| `--card` (panel) | `40 16% 93%` | #F1EFE9 | Secondary surface (right column, hovers) |
+| `--foreground` (ink) | `60 5% 6%` | #0F0F0E | Type, structural lines, primary buttons |
+| `--muted-foreground` (graphite) | `48 4% 42%` | #6E6E68 | Secondary type, micro-labels |
+| `--border` (rule) | `42 9% 84%` | #DAD8D2 | Inner dividers (lighter than ink rules) |
+| `--accent` (terracotta) | `15 63% 46%` | #C04A2C | One accent per screen — hot status, deltas, period mark |
+| `--ink-rule` | same as ink | #0F0F0E | Major structural dividers (1px ink) |
 
-**New `lead_status_history`:** `id, lead_id, from_status, to_status, changed_by, changed_at` — RLS for studio members.
+Two-tier divider system is core to the aesthetic: **1px ink** for top/bottom of major sections, **1px stone (#DAD8D2)** for cells inside.
 
-**Trigger:** when a lead moves to `won`, auto-insert a `projects` row (name = lead full_name + project_type, link `lead_id`).
+### Typography
 
-**Seed ~6 demo leads** spanning the new statuses, temperatures, and sources so the board is populated.
+- **Headlines & numerals:** Inter at weight 400 with tight letter-spacing (`-0.035em` for h1, `-0.04em` for KPI numerals). Modern grotesk, not serif. Cormorant is removed from headings.
+- **Body & UI:** Inter 400/500.
+- **Micro-labels:** Inter 500, uppercase, `letter-spacing: 0.16em`, 11px, graphite color. Sectioned with letter prefixes — `A · TODAY'S BRIEF`, `B · PIPELINE`, `C · RECENT INQUIRIES`.
+- **Tabular numerals:** `font-feature-settings: "tnum","lnum"` on all numbers.
+- Cormorant Garamond is **removed** from the project. The serif romance is gone — Atelier is grotesk-only.
 
-## 2. Edge functions
+### Layout primitives
 
-**`score-lead` (rewrite):** expanded JSON schema returning `fit_score`, `summary`, `temperature`, `urgency`, `next_action`, `suggested_followup`, `missing_info[]`, `score_breakdown{...}`, `red_flags[]`. Prompt incorporates studio profile (currency, preferred types/locations, low-fit signs, follow-up tone).
+1. **Top horizontal navigation** replaces the left sidebar. 56px tall, ink bottom rule, wordmark left, nav links center-left, date + avatar right. Active link = 1px ink underline.
+2. **12-column page grid** with `border-bottom: 1px solid ink` framing major sections.
+3. **Asymmetric splits** — most pages use a 7/5 or 8/4 column split; the smaller column gets `bg-card` (panel) for a quiet contrast block.
+4. **Section letters, not section numbers** — `A · OVERVIEW`, `B · PIPELINE`, `C · RECENT`. Drops the editorial `§ 01` feel.
+5. **Inline KPI rows** inside sections, separated by 1px stone verticals — no boxed cards anywhere.
+6. **Pipeline visualization** — horizontal bars on a stone track with ink fill (terracotta only on the "Won" / hot bar).
+7. **Status chips** are square (no radius), 10–11px, uppercase, `padding: 2px 6px`. Hot = terracotta fill on bone text; everything else = ink outline on bone.
 
-**`extract-lead` (new):** input `{ raw_text, source }`. Returns parsed fields (name, phone, email, project_type, property_type, location, budget_range, timeline, style_preference, urgency, missing_info). Caller inserts row + invokes `score-lead`.
+### Files to change
 
-**`import-leads` (new):** input `{ rows, mapping }`. Bulk-inserts, stuffs unmapped columns into `custom_fields`, then triggers `score-lead` per row (concurrency-capped).
+**Tokens & base**
+- `src/index.css` — replace all color tokens with the palette above; remove `serif-numeral` and `italic-serif` utilities; add `.tabular`, `.rule-ink`, `.rule-stone`, `.section-letter`. Set `--radius: 0`. Remove the Cormorant `@import` (keep Inter only, add weight 600).
+- `tailwind.config.ts` — remove `serif` font family alias to Cormorant, remove `cream`/`ivory`/`bone`/`sand`/`terracotta` legacy tokens, add `panel` and `rule`. Keep `accent` mapped to terracotta.
 
-## 3. Sidebar (StudioLayout)
+**Components**
+- `src/components/StudioLayout.tsx` — **rewrite from sidebar to top nav.** 56px header bar, ink bottom rule, nav items with underline-on-active, date stamp + avatar circle on right. Outlet sits inside a max-w-[1400px] container.
+- `src/components/PageHeader.tsx` — drop the `§ 01` marker; eyebrow becomes `A · LABEL` style; title uses Inter 400 not serif; remove italic subtitle styling.
+- `src/components/SectionMarker.tsx` — replace `§ 01 OVERVIEW` with `B · OVERVIEW` (letter prefix, ink dot separator). Keep the API.
+- `src/components/KPI.tsx` — numeral becomes Inter 400 tabular, 56–72px, with optional delta line below in terracotta (`↑ 3 vs last week`) or graphite (`— flat`).
+- `src/components/Hairline.tsx` — accept `weight: "ink" | "stone"` prop (default stone).
+- `src/components/Logo.tsx` — wordmark in Inter 500, all caps, terracotta period: `AVITUS.`
+- New `src/components/StatChip.tsx` — square uppercase status chip (hot/new/contacted/etc) with the chip rules above.
+- New `src/components/PipelineBar.tsx` — label + count + horizontal bar (stone track, ink fill, terracotta for won/hot).
 
-**Overview · Lead Inbox · Import · Intake Form · Projects · Settings.**
-- "Lead Inbox" → `/leads`
-- "Intake Form" → opens current studio's `/intake` link in new tab + Settings has copy link
-- Designs link removed; routes remain mounted.
+**Pages**
+- `src/pages/Index.tsx` (Overview) — restructure to the prototype: 7/5 split with KPI row on the left and a **Pipeline panel** on the right (`bg-panel`). Below: full-width Recent Inquiries as a 3-column grid divided by stone verticals. Replace serif numerals with Inter tabular. Drop the masthead "AVITUS · STUDIO OPERATING SYSTEM" line — date moves into the top nav.
+- `src/pages/Leads.tsx` — Kanban columns lose the cream card backgrounds; cards become hairline-bordered rows on bone with the new StatChip for temperature. Stage headers use `A · NEW`, `B · NEEDS REVIEW` letters. Table view gains tabular numerals and inline pipeline-style fit-score bars.
+- `src/pages/LeadDetail.tsx` — sections re-lettered (A through H), score block uses Inter tabular at 96px with a horizontal pipeline-style score bar instead of the serif 112px numeral.
+- `src/pages/Import.tsx` — step indicator becomes `A · UPLOAD ─── B · PREVIEW ─── C · CONFIRM` with ink rules between.
+- `src/pages/PasteMessage.tsx`, `src/pages/Settings.tsx`, `src/pages/Projects.tsx`, `src/pages/Designs.tsx`, `src/pages/ProjectDetail.tsx`, `src/pages/DesignDetail.tsx`, `src/pages/DesignNew.tsx` — retoken to new palette, swap section markers, remove italic-serif usages, replace any remaining serif headings with Inter.
+- `src/pages/Auth.tsx` — single ink-rule centered form on bone, no card box, terracotta period in wordmark, Inter throughout.
+- `src/pages/Intake.tsx` (public form) — bone canvas, top centered wordmark, hairline-only inputs (border-bottom only), Inter headlines.
 
-## 4. Overview (`/`)
+### Out of scope
 
-Stat cards: **Hot leads waiting · New leads · Needs review · Follow-ups due · Possible duplicates**.
+- No new routes, edge functions, schema, or auth changes.
+- No dark mode.
+- Drag/drop and data logic untouched.
 
-**Recent Activity** feed (newest 15) merging:
-- Intake form submissions (source=intake_form)
-- Pasted-message leads (source=pasted)
-- Imported leads (source=imported)
-- Status changes (from `lead_status_history`)
-- Follow-up reminders (leads where `reminder_at` ≤ now)
+### QA after build
 
-Each row: small source/event chip + lead name + relative time, links to lead.
-
-## 5. Lead Inbox (`/leads`, renamed)
-
-Header title "Lead Inbox." Three top buttons: **Import Sheet** (→ `/import`), **Paste Message** (→ `/leads/paste`), **Create Lead** (modal with minimal form).
-
-Keep Board / Table views.
-
-**Board columns:** New · Needs Review · High-Fit · Contacted · Consultation Booked · Won · Lost (horizontal scroll on small screens).
-
-**Lead card:** name (serif), project_type, location, budget_range (currency-formatted), score badge, temperature pill (hot=ember, warm=sand, cold=stone), one-line `next_action`.
-
-## 6. Paste Message (`/leads/paste`) — mobile-first
-
-Step 1: full-bleed textarea, source chips (WhatsApp / Instagram / Email / SMS / Other), sticky bottom **Create Lead** button (large tap target, `pb-[env(safe-area-inset-bottom)]`).
-
-Step 2 (review): runs `extract-lead`, shows editable extracted fields + score preview. Sticky **Save Lead**. On save: insert with `raw_inquiry` + extracted fields + source, fire `score-lead`, navigate to detail.
-
-Container `max-w-xl mx-auto`, inputs `min-h-12`.
-
-## 7. Import (`/import`) — new
-
-Four steps with progress dots:
-1. **Upload** — drag/drop CSV (uses `papaparse`).
-2. **Preview** — first 5 rows + detected headers.
-3. **Map columns** — each CSV column → dropdown (Name, Phone, Email, Source, Project type, Property type, Location, Budget, Timeline, Style, Notes, "Custom field", "Skip"). Heuristic auto-suggest by header name.
-4. **Import** — calls `import-leads`, progress indicator, redirects to `/leads`.
-
-Unmapped columns → `custom_fields[csv_header] = value`. Never silently dropped.
-
-## 8. Lead Detail (`/leads/:id`) — restructure
-
-Sections in order:
-
-- **A. Lead Overview** — name, contact, status select, score, temperature, recommended next action.
-- **B. Raw Inquiry** — `raw_inquiry` (or fallback to original brief) in soft monospace block.
-- **C. AI Summary** — `ai_summary`.
-- **D. Extracted Fields** — grid: project_type, property_type, location, budget_range, timeline, style_preference, urgency, source.
-- **E. Score Breakdown** — six horizontal bars from `score_breakdown` (budget/timeline/location/project_type/decision_maker/clarity).
-- **F. Missing Information** — bulleted `missing_info`.
-- **G. Prepared Follow-Up** — editable textarea pre-filled with `suggested_followup` + buttons:
-  - **Copy Message** (clipboard)
-  - **Edit Message** (toggle edit mode, save to `suggested_followup`)
-  - **Mark as Contacted** (sets status=`contacted`, stamps `last_contacted_at`)
-  - **Create Reminder** (small popover: 1d / 3d / 1w / custom → sets `reminder_at`)
-  - No "send" action — owner approves/copies manually.
-- **H. Custom Fields** — key/value table from `custom_fields` (only shown when non-empty).
-- **I. Notes & History** — `lead_activities` (notes) interleaved with `lead_status_history`.
-
-## 9. Settings → "Studio Qualification Profile"
-
-Header retitled. Fields: Studio name, Currency (IDR / USD / SGD / AUD / Other), Target budget min, Target budget max, Preferred project types (chips), Preferred locations (chips), Ideal client, Low-fit warning signs, Signature styles, Follow-up tone (warm / direct / playful / formal), Intake form intro. Public intake link copy block stays.
-
-## 10. Projects
-
-Stays minimal. Auto-created on lead `won`. List shows name, client, status, source lead link. No new project management UI.
-
-## 11. Routing (`App.tsx`)
-
-Add: `/leads/paste` → PasteMessage, `/import` → Import. Keep existing routes; Designs unlinked from sidebar.
-
-## Technical notes
-
-- Add `papaparse` + `@types/papaparse`.
-- `src/lib/format.ts` — currency-aware budget formatter using studio currency.
-- All AI fields render gracefully when null (skeleton or em-dash).
-- Enum additions via `ALTER TYPE ADD VALUE` (separate statements, not in a transaction block).
-- Trigger for auto-project creation uses SECURITY DEFINER function in `public`.
-- Reminder logic: "Follow-ups due" = `reminder_at <= now()` OR (`status = contacted` AND `last_contacted_at < now() - 3 days`).
-- Possible duplicates: leads sharing normalized email or phone (basic SQL count of pairs).
-- All edge functions return CORS headers; validate inputs with zod.
-- Mobile: Paste page uses `min-h-[100dvh]` and safe-area padding.
-- Visual style unchanged — ivory/ink, serif headings, hairline borders.
-
-## Out of scope (explicit)
-
-- Outbound automated messaging (WhatsApp/email/SMS sending)
-- Live Instagram/WhatsApp/Sheets sync
-- Designs feature (hidden, code retained)
-- Full project management
-- CSV export (later)
-
-## Build order
-
-1. Migration (columns, enum, settings, history table, trigger) + demo seed
-2. Edge functions: updated `score-lead`, new `extract-lead`, new `import-leads`
-3. Sidebar rename + new routes
-4. Lead Inbox page (buttons, columns, cards, currency formatting)
-5. Paste Message flow (mobile-first)
-6. Import flow (CSV → mapping → import)
-7. Lead Detail restructure (Prepared Follow-Up actions)
-8. Overview metrics + Recent Activity feed
-9. Settings → Qualification Profile expansion
+Screenshot Overview, Leads (board + table), a Lead Detail, Import step 1, Settings, Auth, and public Intake at 1280px and 390px. Verify: top nav present (no sidebar), terracotta appears at most once per screen, no Cormorant anywhere, all KPI numerals are tabular Inter, dividers correctly use the two-tier ink/stone system.

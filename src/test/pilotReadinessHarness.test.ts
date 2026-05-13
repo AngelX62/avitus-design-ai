@@ -507,7 +507,7 @@ describe("no-key pilot readiness harness", () => {
     );
     expect(actionQueue.every((item) => item.tier === ACTION_RISK_TIER.OWNER_VISIBLE)).toBe(true);
     expect(priorityLeads.length).toBeGreaterThan(0);
-    expect(priorityLeads.every((lead) => lead.studio_id === STUDIO_A)).toBe(true);
+    expect(priorityLeads.every((lead) => (lead as unknown as PilotLead).studio_id === STUDIO_A)).toBe(true);
   });
 
   it("checks Avara fixed read-only tools against tenant-scoped deterministic data", () => {

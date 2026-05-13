@@ -65,8 +65,13 @@ const Intake = () => {
     supabase
       .rpc("get_public_studio", { _slug: studioSlug })
       .maybeSingle()
-      .then(({ data }) => setStudio(data as StudioPublic | null))
-      .finally(() => setLoadingStudio(false));
+      .then(
+        ({ data }) => {
+          setStudio(data as StudioPublic | null);
+          setLoadingStudio(false);
+        },
+        () => setLoadingStudio(false),
+      );
   }, [studioSlug]);
 
   const projectTypeOptions = useMemo(
