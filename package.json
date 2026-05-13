@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "check:env": "node scripts/check-frontend-env.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:pilot": "vitest run src/test/pilotReadinessHarness.test.ts src/test/pilotSecurityGate.test.ts src/test/avaraTools.test.ts src/test/actionQueue.test.ts src/test/coreLeadIntelligence.test.ts",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -51,6 +53,7 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
+    "motion": "^12.38.0",
     "next-themes": "^0.3.0",
     "papaparse": "^5.5.3",
     "react": "^18.3.1",
@@ -81,7 +84,6 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "jsdom": "^20.0.3",
-    "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",

@@ -1,95 +1,108 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const CORE_FIELDS = new Set([
-  "full_name", "phone", "email", "source", "project_type", "property_type",
-  "location", "budget_range", "timeline", "style_preference", "raw_inquiry", "brief",
-]);
+import { handleOptions, jsonResponse } from "../_shared/cors.ts";
+import { analysisStatusForAI, isOpenAIConfigured } from "../_shared/aiAvailability.ts";
+import { ACTION_RISK_TIER } from "../_shared/actionTiers.ts";
+import { importLeadRequestSchema } from "../_shared/leadSchemas.ts";
+import { normalizeImportRow } from "../_shared/importHelpers.ts";
+import { buildAgentContext, recordWorkflowAgentRun, resolvePromptPackVersion } from "../_shared/orchestrator.ts";
+import { adminClient, requireStudioMember, requireUser, runBackground, safeError } from "../_shared/security.ts";
+import { scoreLeadRecord } from "../_shared/scoring.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const options = handleOptions(req);
+  if (options) return options;
 
   try {
-    const { rows, mapping } = await req.json();
-    if (!Array.isArray(rows) || !mapping || typeof mapping !== "object") {
-      return new Response(JSON.stringify({ error: "rows[] and mapping{} required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    if (rows.length > 1000) {
-      return new Response(JSON.stringify({ error: "Max 1000 rows per import" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const payload = importLeadRequestSchema.parse(await req.json());
+    const user = await requireUser(req);
+    const supabase = adminClient();
+    await requireStudioMember(supabase, payload.studio_id, user.id);
+    const aiAvailable = isOpenAIConfigured();
+    const agentContext = buildAgentContext({
+      studio_id: payload.studio_id,
+      prompt_pack_version: resolvePromptPackVersion(aiAvailable),
+      schema_version: "lead-import-v1",
+      requested_tier: ACTION_RISK_TIER.SILENT_INTERNAL,
+    });
 
     const inserted: string[] = [];
-    const skipped: string[] = [];
+    let skipped = 0;
+    let preservedCustomFieldCount = 0;
+    const skippedReasons: Array<{ row_number: number; reason: string }> = [];
 
-    for (const row of rows) {
-      const lead: Record<string, unknown> = { source: "imported", custom_fields: {} as Record<string, unknown> };
-      const custom: Record<string, unknown> = {};
+    for (const [index, row] of payload.rows.entries()) {
+      const normalized = normalizeImportRow(row, payload.mapping);
+      preservedCustomFieldCount += normalized.customFieldCount;
 
-      for (const [csvCol, target] of Object.entries(mapping as Record<string, string>)) {
-        const value = row[csvCol];
-        if (value === undefined || value === null || value === "") continue;
-        if (target === "skip") continue;
-        if (target === "custom") {
-          custom[csvCol] = value;
-        } else if (CORE_FIELDS.has(target)) {
-          lead[target] = value;
-        } else {
-          custom[csvCol] = value;
-        }
-      }
-
-      // Preserve any unmapped CSV columns as custom fields
-      for (const [csvCol, value] of Object.entries(row)) {
-        if (mapping[csvCol]) continue;
-        if (value === undefined || value === null || value === "") continue;
-        custom[csvCol] = value;
-      }
-
-      lead.custom_fields = custom;
-
-      if (!lead.full_name) {
-        skipped.push(JSON.stringify(row).slice(0, 100));
+      if (normalized.skippedReason) {
+        skipped += 1;
+        skippedReasons.push({ row_number: index + 2, reason: normalized.skippedReason });
         continue;
       }
+
+      const lead: Record<string, unknown> = {
+        ...normalized.lead,
+        studio_id: payload.studio_id,
+        source: "imported",
+        imported_by: user.id,
+        created_by: user.id,
+        ai_analysis_status: analysisStatusForAI(aiAvailable),
+      };
       if (!lead.email) lead.email = `unknown+${crypto.randomUUID().slice(0, 8)}@import.avitus`;
-      lead.raw_inquiry = lead.raw_inquiry || lead.brief || null;
 
       const { data, error } = await supabase.from("leads").insert(lead).select("id").single();
       if (error) {
-        console.error("import row error", error.message);
-        skipped.push(error.message);
+        skipped += 1;
+        skippedReasons.push({ row_number: index + 2, reason: "Database insert failed" });
         continue;
       }
       inserted.push(data.id);
     }
 
-    // Fire score-lead in background, capped concurrency (best-effort)
-    const concurrency = 3;
-    let i = 0;
-    const runNext = async (): Promise<void> => {
-      while (i < inserted.length) {
-        const id = inserted[i++];
-        try {
-          await supabase.functions.invoke("score-lead", { body: { lead_id: id } });
-        } catch (e) {
-          console.error("score-lead invoke fail", id, e);
-        }
-      }
-    };
-    // Don't await — return immediately so the UI is responsive
-    void Promise.all(Array.from({ length: concurrency }, runNext));
+    const scoringQueued = aiAvailable ? inserted.slice(0, 25).length : 0;
+    if (aiAvailable) {
+      runBackground(
+        Promise.all(
+          inserted.slice(0, 25).map((leadId) =>
+            scoreLeadRecord(supabase, payload.studio_id, leadId, user.id).catch(() => null),
+          ),
+        ),
+      );
+    }
+    if (!aiAvailable) {
+      runBackground(
+        recordWorkflowAgentRun(supabase, agentContext, {
+          agent_name: "Import Normalization Router",
+          service_name: "lead_intelligence",
+          model: "not_configured",
+          input: { source: "imported", ai_available: false, row_count: payload.rows.length },
+          structured_output_jsonb: {
+            inserted: inserted.length,
+            skipped,
+            preserved_custom_fields: preservedCustomFieldCount,
+            ai_analysis_status: analysisStatusForAI(false),
+          },
+          tier: ACTION_RISK_TIER.SILENT_INTERNAL,
+          status: skipped > 0 ? "partial" : "success",
+          created_by: user.id,
+        }).catch(() => null),
+      );
+    }
 
-    return new Response(JSON.stringify({ ok: true, inserted: inserted.length, skipped: skipped.length }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return jsonResponse(req, {
+      ok: true,
+      ai_available: aiAvailable,
+      inserted: inserted.length,
+      skipped,
+      summary: {
+        inserted: inserted.length,
+        skipped,
+        skipped_reasons: skippedReasons,
+        preserved_custom_fields: preservedCustomFieldCount,
+        scoring_queued: scoringQueued,
+      },
     });
-  } catch (e) {
-    console.error("import-leads error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (error) {
+    const { status, message } = safeError(error);
+    return jsonResponse(req, { ok: false, error: message }, status);
   }
 });

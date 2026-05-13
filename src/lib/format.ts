@@ -1,3 +1,5 @@
+export { CLASSIFICATION_LABELS, SOURCE_LABELS, STATUS_LABELS } from "./leadTypes";
+
 export const formatRelative = (iso?: string | null): string => {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
@@ -11,30 +13,32 @@ export const formatRelative = (iso?: string | null): string => {
   return new Date(iso).toLocaleDateString();
 };
 
+export const formatBudget = (budget?: string | null, currency?: string | null) => {
+  if (!budget) return "";
+  if (!currency || currency === "Other") return budget;
+  return budget.includes(currency) ? budget : `${currency} ${budget}`;
+};
+
 export const temperatureClass = (t?: string | null) => {
   switch (t) {
-    case "hot": return "bg-amber-100 text-amber-900 border-amber-200";
+    case "hot": return "bg-moss-soft text-pine border-pine/20";
     case "warm": return "bg-stone-100 text-stone-800 border-stone-200";
     case "cold": return "bg-slate-100 text-slate-700 border-slate-200";
     default: return "bg-secondary text-stone border-border";
   }
 };
 
-export const STATUS_LABELS: Record<string, string> = {
-  new: "New",
-  needs_review: "Needs Review",
-  high_fit: "High-Fit",
-  contacted: "Contacted",
-  consultation_booked: "Consultation Booked",
-  won: "Won",
-  lost: "Lost",
-  qualified: "Qualified",
-  proposal: "Proposal",
-};
-
-export const SOURCE_LABELS: Record<string, string> = {
-  intake_form: "Intake Form",
-  pasted: "Pasted Message",
-  imported: "Imported",
-  manual: "Manual",
+export const classificationClass = (classification?: string | null) => {
+  switch (classification) {
+    case "hot":
+    case "warm":
+    case "cold":
+      return temperatureClass(classification);
+    case "not_fit":
+      return "bg-stone-100 text-stone-600 border-stone-200";
+    case "needs_review":
+      return "bg-attn-soft text-attn border-attn-rule/40";
+    default:
+      return "bg-secondary text-stone border-border";
+  }
 };

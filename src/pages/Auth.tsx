@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
@@ -8,25 +8,43 @@ import { toast } from "sonner";
 const Auth = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get("invite");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [studioName, setStudioName] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (!loading && user) navigate("/"); }, [user, loading, navigate]);
+  useEffect(() => {
+    if (!loading && user) navigate(inviteToken ? `/invite/${inviteToken}` : "/");
+  }, [user, loading, navigate, inviteToken]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signup") {
+        if (!inviteToken && !studioName.trim()) {
+          toast.error("Studio or real estate name is required");
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin, data: { full_name: name } },
+          options: {
+            emailRedirectTo: inviteToken
+              ? `${window.location.origin}/auth?invite=${encodeURIComponent(inviteToken)}`
+              : window.location.origin,
+            data: {
+              full_name: name.trim(),
+              ...(studioName.trim() ? { studio_name: studioName.trim() } : {}),
+            },
+          },
         });
         if (error) throw error;
-        toast.success("Account created. You're in.");
+        toast.success(inviteToken ? "Account created. Accepting invite next." : "Account created.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -38,54 +56,62 @@ const Auth = () => {
     }
   };
 
+  const eyebrow = mode === "signin"
+    ? "WELCOME BACK"
+    : inviteToken
+      ? "CREATE TEAM ACCOUNT"
+      : "CREATE OWNER ACCOUNT";
+
+  const title = mode === "signin" ? "Enter the studio." : "Begin with Avitus.";
+
+  const subtitle = mode === "signin"
+    ? "Sign in to continue working on your leads."
+    : inviteToken
+      ? "Accept your invite and join the workspace."
+      : "A quiet workspace for capturing, cleaning, and following up on leads.";
+
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-ink text-ivory">
-        <Logo size={36} />
-        <div className="max-w-md">
-          <div className="micro-label text-ivory/60 mb-8">STUDIO · INTELLIGENCE</div>
-          <h1 className="font-serif text-6xl leading-[1.05] text-ivory">
-            Design,<br /><em className="font-light">refined</em><br />by AI.
-          </h1>
-          <p className="mt-8 text-ivory/60 text-[15px] leading-relaxed max-w-sm">
-            The quiet, intelligent workspace for interior studios. Generate concepts, qualify leads,
-            ship beautifully — in one place.
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-background px-6">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="h-px w-6 bg-sage mb-5" aria-hidden />
+          <Logo />
+          <div className="micro-label mt-6 mb-3">{eyebrow}</div>
+          <h1 className="font-serif text-4xl text-pine leading-none">{title}</h1>
+          <p className="mt-4 text-stone text-[15px] leading-relaxed max-w-xs">{subtitle}</p>
         </div>
-        <div className="micro-label text-ivory/40">© Avitus</div>
-      </div>
 
-      <div className="flex items-center justify-center p-8">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden mb-10"><Logo withWordmark /></div>
-          <div className="micro-label mb-4">{mode === "signin" ? "WELCOME BACK" : "CREATE STUDIO ACCOUNT"}</div>
-          <h2 className="font-serif text-4xl text-ink mb-10">
-            {mode === "signin" ? "Enter the studio." : "Begin with Avitus."}
-          </h2>
-
-          <form onSubmit={submit} className="space-y-5">
-            {mode === "signup" && (
+        <form onSubmit={submit} className="space-y-5">
+          {mode === "signup" && (
+            <>
+              {!inviteToken && (
+                <Field label="Studio / real estate name" value={studioName} onChange={setStudioName} required />
+              )}
               <Field label="Full name" value={name} onChange={setName} required />
-            )}
-            <Field label="Email" type="email" value={email} onChange={setEmail} required />
-            <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={6} />
-
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full bg-ink text-ivory py-3.5 text-xs tracking-[0.22em] uppercase hover:bg-ink/90 transition-colors disabled:opacity-60"
-            >
-              {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
-            </button>
-          </form>
+            </>
+          )}
+          <Field label="Email" type="email" value={email} onChange={setEmail} required />
+          <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={6} />
 
           <button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-ink text-ivory py-3.5 text-xs tracking-[0.22em] uppercase hover:bg-ink/90 transition-colors disabled:opacity-60 mt-2"
+          >
+            {busy ? "Working…" : mode === "signin" ? "Sign in" : "Create account"}
+          </button>
+        </form>
+
+        <div className="mt-8 flex justify-center">
+          <button
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-8 micro-label text-stone hover:text-ink transition-colors"
+            className="micro-label text-stone hover:text-sage-deep transition-colors"
           >
             {mode === "signin" ? "→ Need an account?" : "→ Already have one?"}
           </button>
         </div>
+
+        <div className="mt-16 text-center micro-label text-stone/60">© Avitus</div>
       </div>
     </div>
   );
@@ -98,7 +124,7 @@ const Field = ({ label, value, onChange, ...rest }: any) => (
       {...rest}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-transparent border-b border-border focus:border-ink outline-none py-2 text-ink placeholder:text-stone transition-colors"
+      className="w-full bg-transparent border-b border-border focus:border-sage outline-none py-2 text-ink placeholder:text-stone transition-colors"
     />
   </label>
 );

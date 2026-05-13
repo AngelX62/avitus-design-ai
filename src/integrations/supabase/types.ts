@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_runs: {
+        Row: {
+          agent_name: string
+          completion_tokens: number
+          confidence: number | null
+          corrected_at: string | null
+          corrected_by: string | null
+          cost_usd: number
+          created_at: string
+          created_by: string | null
+          human_correction_jsonb: Json | null
+          input_hash: string | null
+          latency_ms: number
+          lead_id: string | null
+          model: string | null
+          prompt_pack_version: string
+          prompt_tokens: number
+          raw_text: string | null
+          run_id: string
+          schema_version: string
+          service_name: string
+          status: string
+          structured_output_jsonb: Json
+          studio_id: string
+          tier: number
+        }
+        Insert: {
+          agent_name: string
+          completion_tokens?: number
+          confidence?: number | null
+          corrected_at?: string | null
+          corrected_by?: string | null
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          human_correction_jsonb?: Json | null
+          input_hash?: string | null
+          latency_ms?: number
+          lead_id?: string | null
+          model?: string | null
+          prompt_pack_version?: string
+          prompt_tokens?: number
+          raw_text?: string | null
+          run_id?: string
+          schema_version?: string
+          service_name: string
+          status?: string
+          structured_output_jsonb?: Json
+          studio_id: string
+          tier?: number
+        }
+        Update: {
+          agent_name?: string
+          completion_tokens?: number
+          confidence?: number | null
+          corrected_at?: string | null
+          corrected_by?: string | null
+          cost_usd?: number
+          created_at?: string
+          created_by?: string | null
+          human_correction_jsonb?: Json | null
+          input_hash?: string | null
+          latency_ms?: number
+          lead_id?: string | null
+          model?: string | null
+          prompt_pack_version?: string
+          prompt_tokens?: number
+          raw_text?: string | null
+          run_id?: string
+          schema_version?: string
+          service_name?: string
+          status?: string
+          structured_output_jsonb?: Json
+          studio_id?: string
+          tier?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_runs_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_generations: {
         Row: {
           brief: string | null
@@ -29,6 +122,7 @@ export type Database = {
           room_id: string | null
           room_photo_url: string | null
           status: string
+          studio_id: string
           style: string | null
           variation_count: number
         }
@@ -46,6 +140,7 @@ export type Database = {
           room_id?: string | null
           room_photo_url?: string | null
           status?: string
+          studio_id?: string
           style?: string | null
           variation_count?: number
         }
@@ -63,6 +158,7 @@ export type Database = {
           room_id?: string | null
           room_photo_url?: string | null
           status?: string
+          studio_id?: string
           style?: string | null
           variation_count?: number
         }
@@ -92,6 +188,7 @@ export type Database = {
           materials: string[] | null
           position: number
           rationale: string | null
+          studio_id: string
         }
         Insert: {
           created_at?: string
@@ -101,6 +198,7 @@ export type Database = {
           materials?: string[] | null
           position?: number
           rationale?: string | null
+          studio_id?: string
         }
         Update: {
           created_at?: string
@@ -110,6 +208,7 @@ export type Database = {
           materials?: string[] | null
           position?: number
           rationale?: string | null
+          studio_id?: string
         }
         Relationships: [
           {
@@ -117,6 +216,13 @@ export type Database = {
             columns: ["generation_id"]
             isOneToOne: false
             referencedRelation: "design_generations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "design_variations_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
             referencedColumns: ["id"]
           },
         ]
@@ -129,6 +235,7 @@ export type Database = {
           id: string
           kind: string
           lead_id: string
+          studio_id: string
         }
         Insert: {
           author_id?: string | null
@@ -137,6 +244,7 @@ export type Database = {
           id?: string
           kind: string
           lead_id: string
+          studio_id?: string
         }
         Update: {
           author_id?: string | null
@@ -145,6 +253,7 @@ export type Database = {
           id?: string
           kind?: string
           lead_id?: string
+          studio_id?: string
         }
         Relationships: [
           {
@@ -163,6 +272,7 @@ export type Database = {
           from_status: string | null
           id: string
           lead_id: string
+          studio_id: string
           to_status: string
         }
         Insert: {
@@ -171,6 +281,7 @@ export type Database = {
           from_status?: string | null
           id?: string
           lead_id: string
+          studio_id?: string
           to_status: string
         }
         Update: {
@@ -179,6 +290,7 @@ export type Database = {
           from_status?: string | null
           id?: string
           lead_id?: string
+          studio_id?: string
           to_status?: string
         }
         Relationships: []
@@ -186,6 +298,9 @@ export type Database = {
       leads: {
         Row: {
           ai_next_action: string | null
+          ai_analysis_error: string | null
+          ai_analysis_status: string
+          ai_model: string | null
           ai_processed_at: string | null
           ai_red_flags: string[] | null
           ai_reply_draft: string | null
@@ -193,13 +308,17 @@ export type Database = {
           assigned_to: string | null
           brief: string | null
           budget_range: string | null
+          classification: string | null
           created_at: string
+          created_by: string | null
           custom_fields: Json | null
           email: string
           fit_score: number | null
           full_name: string
           id: string
+          imported_by: string | null
           last_contacted_at: string | null
+          last_scored_by: string | null
           location: string | null
           missing_info: string[] | null
           phone: string | null
@@ -212,6 +331,7 @@ export type Database = {
           score_breakdown: Json | null
           source: string | null
           status: Database["public"]["Enums"]["lead_status"]
+          studio_id: string
           style_preference: string | null
           suggested_followup: string | null
           temperature: string | null
@@ -221,6 +341,9 @@ export type Database = {
         }
         Insert: {
           ai_next_action?: string | null
+          ai_analysis_error?: string | null
+          ai_analysis_status?: string
+          ai_model?: string | null
           ai_processed_at?: string | null
           ai_red_flags?: string[] | null
           ai_reply_draft?: string | null
@@ -228,13 +351,17 @@ export type Database = {
           assigned_to?: string | null
           brief?: string | null
           budget_range?: string | null
+          classification?: string | null
           created_at?: string
+          created_by?: string | null
           custom_fields?: Json | null
           email: string
           fit_score?: number | null
           full_name: string
           id?: string
+          imported_by?: string | null
           last_contacted_at?: string | null
+          last_scored_by?: string | null
           location?: string | null
           missing_info?: string[] | null
           phone?: string | null
@@ -247,6 +374,7 @@ export type Database = {
           score_breakdown?: Json | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          studio_id: string
           style_preference?: string | null
           suggested_followup?: string | null
           temperature?: string | null
@@ -256,6 +384,9 @@ export type Database = {
         }
         Update: {
           ai_next_action?: string | null
+          ai_analysis_error?: string | null
+          ai_analysis_status?: string
+          ai_model?: string | null
           ai_processed_at?: string | null
           ai_red_flags?: string[] | null
           ai_reply_draft?: string | null
@@ -263,13 +394,17 @@ export type Database = {
           assigned_to?: string | null
           brief?: string | null
           budget_range?: string | null
+          classification?: string | null
           created_at?: string
+          created_by?: string | null
           custom_fields?: Json | null
           email?: string
           fit_score?: number | null
           full_name?: string
           id?: string
+          imported_by?: string | null
           last_contacted_at?: string | null
+          last_scored_by?: string | null
           location?: string | null
           missing_info?: string[] | null
           phone?: string | null
@@ -282,6 +417,7 @@ export type Database = {
           score_breakdown?: Json | null
           source?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          studio_id?: string
           style_preference?: string | null
           suggested_followup?: string | null
           temperature?: string | null
@@ -319,31 +455,37 @@ export type Database = {
         Row: {
           client_name: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           id: string
           lead_id: string | null
           name: string
           status: Database["public"]["Enums"]["project_status"]
+          studio_id: string
           updated_at: string
         }
         Insert: {
           client_name?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           lead_id?: string | null
           name: string
           status?: Database["public"]["Enums"]["project_status"]
+          studio_id: string
           updated_at?: string
         }
         Update: {
           client_name?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           lead_id?: string | null
           name?: string
           status?: Database["public"]["Enums"]["project_status"]
+          studio_id?: string
           updated_at?: string
         }
         Relationships: [
@@ -359,24 +501,30 @@ export type Database = {
       rooms: {
         Row: {
           created_at: string
+          created_by: string | null
           id: string
           name: string
           notes: string | null
           project_id: string
+          studio_id: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           id?: string
           name: string
           notes?: string | null
           project_id: string
+          studio_id?: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           id?: string
           name?: string
           notes?: string | null
           project_id?: string
+          studio_id?: string
         }
         Relationships: [
           {
@@ -388,53 +536,174 @@ export type Database = {
           },
         ]
       }
+      studio_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          studio_id: string
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          studio_id: string
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          studio_id?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_invites_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_memberships: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          studio_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          studio_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          studio_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_memberships_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       studio_settings: {
         Row: {
+          budget_conversation_style: string | null
+          business_type: string | null
           created_at: string
           currency: string
           followup_tone: string
           id: string
           ideal_client: string | null
           intake_intro: string | null
+          intake_thank_you_message: string | null
           low_fit_signs: string | null
+          monthly_cost_ceiling: number | null
           preferred_locations: string[] | null
           preferred_project_types: string[] | null
+          prompt_pack_version: string | null
           signature_styles: string[] | null
+          studio_id: string
           studio_name: string
           target_budget_max: number | null
           target_budget_min: number | null
           updated_at: string
         }
         Insert: {
+          budget_conversation_style?: string | null
+          business_type?: string | null
           created_at?: string
           currency?: string
           followup_tone?: string
           id?: string
           ideal_client?: string | null
           intake_intro?: string | null
+          intake_thank_you_message?: string | null
           low_fit_signs?: string | null
+          monthly_cost_ceiling?: number | null
           preferred_locations?: string[] | null
           preferred_project_types?: string[] | null
+          prompt_pack_version?: string | null
           signature_styles?: string[] | null
+          studio_id: string
           studio_name?: string
           target_budget_max?: number | null
           target_budget_min?: number | null
           updated_at?: string
         }
         Update: {
+          budget_conversation_style?: string | null
+          business_type?: string | null
           created_at?: string
           currency?: string
           followup_tone?: string
           id?: string
           ideal_client?: string | null
           intake_intro?: string | null
+          intake_thank_you_message?: string | null
           low_fit_signs?: string | null
+          monthly_cost_ceiling?: number | null
           preferred_locations?: string[] | null
           preferred_project_types?: string[] | null
+          prompt_pack_version?: string | null
           signature_styles?: string[] | null
+          studio_id?: string
           studio_name?: string
           target_budget_max?: number | null
           target_budget_min?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      studios: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
           updated_at?: string
         }
         Relationships: []
@@ -465,10 +734,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_studio: {
+        Args: { _slug: string }
+        Returns: {
+          business_type: string | null
+          currency: string
+          intake_intro: string | null
+          intake_thank_you_message: string | null
+          preferred_locations: string[] | null
+          preferred_project_types: string[] | null
+          slug: string
+          studio_id: string
+          studio_name: string
+          target_budget_max: number | null
+          target_budget_min: number | null
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      has_studio_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _studio_id: string
+          _user_id?: string
         }
         Returns: boolean
       }
